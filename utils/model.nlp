@@ -1,0 +1,1490 @@
+{
+  "settings": {
+    "languages": [
+      "vi"
+    ],
+    "forceNER": true,
+    "tag": "nlp",
+    "threshold": 0.5,
+    "autoLoad": true,
+    "autoSave": true,
+    "modelFileName": "model.nlp",
+    "executeActionsBeforeAnswers": false,
+    "calculateSentiment": true
+  },
+  "nluManager": {
+    "settings": {
+      "tag": "nlu-manager"
+    },
+    "locales": [
+      "vi"
+    ],
+    "languageNames": {},
+    "domainManagers": {
+      "vi": {
+        "settings": {
+          "locale": "vi",
+          "trainByDomain": false,
+          "tag": "domain-manager-vi",
+          "nluByDomain": {
+            "default": {
+              "className": "NeuralNlu",
+              "settings": {}
+            }
+          },
+          "useStemDict": true
+        },
+        "stemDict": {
+          "doanh,hom,nay,thu": {
+            "intent": "report.revenue.today",
+            "domain": "default"
+          },
+          "ban,bao,hom,nay,nhieu,đuoc": {
+            "intent": "report.revenue.today",
+            "domain": "default"
+          },
+          "doanh,hom,nay,ngay,thu": {
+            "intent": "report.revenue.today",
+            "domain": "default"
+          },
+          "doanh,nay,thang,thu": {
+            "intent": "report.revenue.month",
+            "domain": "default"
+          },
+          "ban,hang,nay,thang,tien,tong": {
+            "intent": "report.revenue.month",
+            "domain": "default"
+          },
+          "bao,cua,hang,nay,nhieu,thang,thu": {
+            "intent": "report.revenue.month",
+            "domain": "default"
+          },
+          "bao,co,hang,hom,nay,nhieu,đon": {
+            "intent": "report.orders.today",
+            "domain": "default"
+          },
+          "hom,nay,so,đon": {
+            "intent": "report.orders.today",
+            "domain": "default"
+          },
+          "co,hom,may,nay,đon": {
+            "intent": "report.orders.today",
+            "domain": "default"
+          },
+          "hang,nay,trong,tuan,đon": {
+            "intent": "report.orders.week",
+            "domain": "default"
+          },
+          "nay,so,tuan,đon": {
+            "intent": "report.orders.week",
+            "domain": "default"
+          },
+          "ban,chay,pham,san,top": {
+            "intent": "report.topProducts",
+            "domain": "default"
+          },
+          "ban,nao,nhat,nhieu,pham,san": {
+            "intent": "report.topProducts",
+            "domain": "default"
+          },
+          "5,ban,chay,hang,mat,top": {
+            "intent": "report.topProducts",
+            "domain": "default"
+          },
+          "hang,het,nao,pham,san,sap": {
+            "intent": "report.lowStock",
+            "domain": "default"
+          },
+          "con,hang,it,mat,nao": {
+            "intent": "report.lowStock",
+            "domain": "default"
+          },
+          "kho,kiem,thap,ton,tra": {
+            "intent": "report.lowStock",
+            "domain": "default"
+          },
+          "hang,khach,moi": {
+            "intent": "report.newCustomers",
+            "domain": "default"
+          },
+          "hang,khach,ky,vua,đang": {
+            "intent": "report.newCustomers",
+            "domain": "default"
+          },
+          "ai,co,hang,khong,moi,mua": {
+            "intent": "report.newCustomers",
+            "domain": "default"
+          },
+          "chao": {
+            "intent": "smalltalk.greet",
+            "domain": "default"
+          },
+          "chao,xin": {
+            "intent": "smalltalk.greet",
+            "domain": "default"
+          },
+          "hello": {
+            "intent": "smalltalk.greet",
+            "domain": "default"
+          },
+          "cam,on": {
+            "intent": "smalltalk.thanks",
+            "domain": "default"
+          },
+          "thanks": {
+            "intent": "smalltalk.thanks",
+            "domain": "default"
+          },
+          "biet,on": {
+            "intent": "smalltalk.thanks",
+            "domain": "default"
+          },
+          "biet,tam": {
+            "intent": "smalltalk.bye",
+            "domain": "default"
+          },
+          "bye": {
+            "intent": "smalltalk.bye",
+            "domain": "default"
+          }
+        },
+        "intentDict": {
+          "report.revenue.today": "default",
+          "report.revenue.month": "default",
+          "report.orders.today": "default",
+          "report.orders.week": "default",
+          "report.topProducts": "default",
+          "report.lowStock": "default",
+          "report.newCustomers": "default",
+          "smalltalk.greet": "default",
+          "smalltalk.thanks": "default",
+          "smalltalk.bye": "default"
+        },
+        "sentences": [
+          {
+            "domain": "default",
+            "utterance": "doanh thu hôm nay",
+            "intent": "report.revenue.today"
+          },
+          {
+            "domain": "default",
+            "utterance": "hôm nay bán được bao nhiêu",
+            "intent": "report.revenue.today"
+          },
+          {
+            "domain": "default",
+            "utterance": "doanh thu ngày hôm nay",
+            "intent": "report.revenue.today"
+          },
+          {
+            "domain": "default",
+            "utterance": "doanh thu tháng này",
+            "intent": "report.revenue.month"
+          },
+          {
+            "domain": "default",
+            "utterance": "tổng tiền bán hàng tháng này",
+            "intent": "report.revenue.month"
+          },
+          {
+            "domain": "default",
+            "utterance": "tháng này cửa hàng thu bao nhiêu",
+            "intent": "report.revenue.month"
+          },
+          {
+            "domain": "default",
+            "utterance": "có bao nhiêu đơn hàng hôm nay",
+            "intent": "report.orders.today"
+          },
+          {
+            "domain": "default",
+            "utterance": "số đơn hôm nay",
+            "intent": "report.orders.today"
+          },
+          {
+            "domain": "default",
+            "utterance": "hôm nay có mấy đơn",
+            "intent": "report.orders.today"
+          },
+          {
+            "domain": "default",
+            "utterance": "đơn hàng trong tuần này",
+            "intent": "report.orders.week"
+          },
+          {
+            "domain": "default",
+            "utterance": "số đơn tuần này",
+            "intent": "report.orders.week"
+          },
+          {
+            "domain": "default",
+            "utterance": "top sản phẩm bán chạy",
+            "intent": "report.topProducts"
+          },
+          {
+            "domain": "default",
+            "utterance": "sản phẩm nào bán nhiều nhất",
+            "intent": "report.topProducts"
+          },
+          {
+            "domain": "default",
+            "utterance": "top 5 mặt hàng bán chạy",
+            "intent": "report.topProducts"
+          },
+          {
+            "domain": "default",
+            "utterance": "sản phẩm nào sắp hết hàng",
+            "intent": "report.lowStock"
+          },
+          {
+            "domain": "default",
+            "utterance": "mặt hàng nào còn ít",
+            "intent": "report.lowStock"
+          },
+          {
+            "domain": "default",
+            "utterance": "kiểm tra tồn kho thấp",
+            "intent": "report.lowStock"
+          },
+          {
+            "domain": "default",
+            "utterance": "khách hàng mới",
+            "intent": "report.newCustomers"
+          },
+          {
+            "domain": "default",
+            "utterance": "khách hàng vừa đăng ký",
+            "intent": "report.newCustomers"
+          },
+          {
+            "domain": "default",
+            "utterance": "có ai mới mua hàng không",
+            "intent": "report.newCustomers"
+          },
+          {
+            "domain": "default",
+            "utterance": "chào",
+            "intent": "smalltalk.greet"
+          },
+          {
+            "domain": "default",
+            "utterance": "xin chào",
+            "intent": "smalltalk.greet"
+          },
+          {
+            "domain": "default",
+            "utterance": "hello",
+            "intent": "smalltalk.greet"
+          },
+          {
+            "domain": "default",
+            "utterance": "cảm ơn",
+            "intent": "smalltalk.thanks"
+          },
+          {
+            "domain": "default",
+            "utterance": "thanks",
+            "intent": "smalltalk.thanks"
+          },
+          {
+            "domain": "default",
+            "utterance": "biết ơn",
+            "intent": "smalltalk.thanks"
+          },
+          {
+            "domain": "default",
+            "utterance": "tạm biệt",
+            "intent": "smalltalk.bye"
+          },
+          {
+            "domain": "default",
+            "utterance": "bye",
+            "intent": "smalltalk.bye"
+          }
+        ],
+        "domains": {
+          "master_domain": {
+            "settings": {
+              "locale": "vi",
+              "tag": "nlu-vi",
+              "keepStopwords": true,
+              "nonefeatureValue": 1,
+              "nonedeltaMultiplier": 1.2,
+              "spellCheck": false,
+              "spellCheckDistance": 1,
+              "filterZeros": true,
+              "log": true
+            },
+            "features": {
+              "5": 1,
+              "doanh": 1,
+              "thu": 1,
+              "hom": 1,
+              "nay": 1,
+              "ban": 1,
+              "đuoc": 1,
+              "bao": 1,
+              "nhieu": 1,
+              "ngay": 1,
+              "thang": 1,
+              "tong": 1,
+              "tien": 1,
+              "hang": 1,
+              "cua": 1,
+              "co": 1,
+              "đon": 1,
+              "so": 1,
+              "may": 1,
+              "trong": 1,
+              "tuan": 1,
+              "top": 1,
+              "san": 1,
+              "pham": 1,
+              "chay": 1,
+              "nao": 1,
+              "nhat": 1,
+              "mat": 1,
+              "sap": 1,
+              "het": 1,
+              "con": 1,
+              "it": 1,
+              "kiem": 1,
+              "tra": 1,
+              "ton": 1,
+              "kho": 1,
+              "thap": 1,
+              "khach": 1,
+              "moi": 1,
+              "vua": 1,
+              "đang": 1,
+              "ky": 1,
+              "ai": 1,
+              "mua": 1,
+              "khong": 1,
+              "chao": 1,
+              "xin": 1,
+              "hello": 1,
+              "cam": 1,
+              "on": 1,
+              "thanks": 1,
+              "biet": 1,
+              "tam": 1,
+              "bye": 1
+            },
+            "intents": {
+              "report.revenue.today": 1,
+              "report.revenue.month": 1,
+              "report.orders.today": 1,
+              "report.orders.week": 1,
+              "report.topProducts": 1,
+              "report.lowStock": 1,
+              "report.newCustomers": 1,
+              "smalltalk.greet": 1,
+              "smalltalk.thanks": 1,
+              "smalltalk.bye": 1
+            },
+            "intentFeatures": {
+              "report.revenue.today": {
+                "doanh": 1,
+                "thu": 1,
+                "hom": 1,
+                "nay": 1,
+                "ban": 1,
+                "đuoc": 1,
+                "bao": 1,
+                "nhieu": 1,
+                "ngay": 1
+              },
+              "report.revenue.month": {
+                "doanh": 1,
+                "thu": 1,
+                "thang": 1,
+                "nay": 1,
+                "tong": 1,
+                "tien": 1,
+                "ban": 1,
+                "hang": 1,
+                "cua": 1,
+                "bao": 1,
+                "nhieu": 1
+              },
+              "report.orders.today": {
+                "co": 1,
+                "bao": 1,
+                "nhieu": 1,
+                "đon": 1,
+                "hang": 1,
+                "hom": 1,
+                "nay": 1,
+                "so": 1,
+                "may": 1
+              },
+              "report.orders.week": {
+                "đon": 1,
+                "hang": 1,
+                "trong": 1,
+                "tuan": 1,
+                "nay": 1,
+                "so": 1
+              },
+              "report.topProducts": {
+                "5": 1,
+                "top": 1,
+                "san": 1,
+                "pham": 1,
+                "ban": 1,
+                "chay": 1,
+                "nao": 1,
+                "nhieu": 1,
+                "nhat": 1,
+                "mat": 1,
+                "hang": 1
+              },
+              "report.lowStock": {
+                "san": 1,
+                "pham": 1,
+                "nao": 1,
+                "sap": 1,
+                "het": 1,
+                "hang": 1,
+                "mat": 1,
+                "con": 1,
+                "it": 1,
+                "kiem": 1,
+                "tra": 1,
+                "ton": 1,
+                "kho": 1,
+                "thap": 1
+              },
+              "report.newCustomers": {
+                "khach": 1,
+                "hang": 1,
+                "moi": 1,
+                "vua": 1,
+                "đang": 1,
+                "ky": 1,
+                "co": 1,
+                "ai": 1,
+                "mua": 1,
+                "khong": 1
+              },
+              "smalltalk.greet": {
+                "chao": 1,
+                "xin": 1,
+                "hello": 1
+              },
+              "smalltalk.thanks": {
+                "cam": 1,
+                "on": 1,
+                "thanks": 1,
+                "biet": 1
+              },
+              "smalltalk.bye": {
+                "tam": 1,
+                "biet": 1,
+                "bye": 1
+              }
+            },
+            "featuresToIntent": {
+              "5": [
+                "report.topProducts"
+              ],
+              "doanh": [
+                "report.revenue.today",
+                "report.revenue.month"
+              ],
+              "thu": [
+                "report.revenue.today",
+                "report.revenue.month"
+              ],
+              "hom": [
+                "report.revenue.today",
+                "report.orders.today"
+              ],
+              "nay": [
+                "report.revenue.today",
+                "report.revenue.month",
+                "report.orders.today",
+                "report.orders.week"
+              ],
+              "ban": [
+                "report.revenue.today",
+                "report.revenue.month",
+                "report.topProducts"
+              ],
+              "đuoc": [
+                "report.revenue.today"
+              ],
+              "bao": [
+                "report.revenue.today",
+                "report.revenue.month",
+                "report.orders.today"
+              ],
+              "nhieu": [
+                "report.revenue.today",
+                "report.revenue.month",
+                "report.orders.today",
+                "report.topProducts"
+              ],
+              "ngay": [
+                "report.revenue.today"
+              ],
+              "thang": [
+                "report.revenue.month"
+              ],
+              "tong": [
+                "report.revenue.month"
+              ],
+              "tien": [
+                "report.revenue.month"
+              ],
+              "hang": [
+                "report.revenue.month",
+                "report.orders.today",
+                "report.orders.week",
+                "report.topProducts",
+                "report.lowStock",
+                "report.newCustomers"
+              ],
+              "cua": [
+                "report.revenue.month"
+              ],
+              "co": [
+                "report.orders.today",
+                "report.newCustomers"
+              ],
+              "đon": [
+                "report.orders.today",
+                "report.orders.week"
+              ],
+              "so": [
+                "report.orders.today",
+                "report.orders.week"
+              ],
+              "may": [
+                "report.orders.today"
+              ],
+              "trong": [
+                "report.orders.week"
+              ],
+              "tuan": [
+                "report.orders.week"
+              ],
+              "top": [
+                "report.topProducts"
+              ],
+              "san": [
+                "report.topProducts",
+                "report.lowStock"
+              ],
+              "pham": [
+                "report.topProducts",
+                "report.lowStock"
+              ],
+              "chay": [
+                "report.topProducts"
+              ],
+              "nao": [
+                "report.topProducts",
+                "report.lowStock"
+              ],
+              "nhat": [
+                "report.topProducts"
+              ],
+              "mat": [
+                "report.topProducts",
+                "report.lowStock"
+              ],
+              "sap": [
+                "report.lowStock"
+              ],
+              "het": [
+                "report.lowStock"
+              ],
+              "con": [
+                "report.lowStock"
+              ],
+              "it": [
+                "report.lowStock"
+              ],
+              "kiem": [
+                "report.lowStock"
+              ],
+              "tra": [
+                "report.lowStock"
+              ],
+              "ton": [
+                "report.lowStock"
+              ],
+              "kho": [
+                "report.lowStock"
+              ],
+              "thap": [
+                "report.lowStock"
+              ],
+              "khach": [
+                "report.newCustomers"
+              ],
+              "moi": [
+                "report.newCustomers"
+              ],
+              "vua": [
+                "report.newCustomers"
+              ],
+              "đang": [
+                "report.newCustomers"
+              ],
+              "ky": [
+                "report.newCustomers"
+              ],
+              "ai": [
+                "report.newCustomers"
+              ],
+              "mua": [
+                "report.newCustomers"
+              ],
+              "khong": [
+                "report.newCustomers"
+              ],
+              "chao": [
+                "smalltalk.greet"
+              ],
+              "xin": [
+                "smalltalk.greet"
+              ],
+              "hello": [
+                "smalltalk.greet"
+              ],
+              "cam": [
+                "smalltalk.thanks"
+              ],
+              "on": [
+                "smalltalk.thanks"
+              ],
+              "thanks": [
+                "smalltalk.thanks"
+              ],
+              "biet": [
+                "smalltalk.thanks",
+                "smalltalk.bye"
+              ],
+              "tam": [
+                "smalltalk.bye"
+              ],
+              "bye": [
+                "smalltalk.bye"
+              ]
+            },
+            "neuralNetwork": {
+              "settings": {
+                "locale": "vi",
+                "tag": "nlu-vi",
+                "keepStopwords": true,
+                "nonefeatureValue": 1,
+                "nonedeltaMultiplier": 1.2,
+                "spellCheck": false,
+                "spellCheckDistance": 1,
+                "filterZeros": true,
+                "log": true
+              },
+              "features": [
+                "doanh",
+                "thu",
+                "hom",
+                "nay",
+                "ban",
+                "đuoc",
+                "bao",
+                "nhieu",
+                "ngay",
+                "thang",
+                "tong",
+                "tien",
+                "hang",
+                "cua",
+                "co",
+                "đon",
+                "so",
+                "may",
+                "trong",
+                "tuan",
+                "top",
+                "san",
+                "pham",
+                "chay",
+                "nao",
+                "nhat",
+                "5",
+                "mat",
+                "sap",
+                "het",
+                "con",
+                "it",
+                "kiem",
+                "tra",
+                "ton",
+                "kho",
+                "thap",
+                "khach",
+                "moi",
+                "vua",
+                "đang",
+                "ky",
+                "ai",
+                "mua",
+                "khong",
+                "chao",
+                "xin",
+                "hello",
+                "cam",
+                "on",
+                "thanks",
+                "biet",
+                "tam",
+                "bye"
+              ],
+              "intents": [
+                "report.revenue.today",
+                "report.revenue.month",
+                "report.orders.today",
+                "report.orders.week",
+                "report.topProducts",
+                "report.lowStock",
+                "report.newCustomers",
+                "smalltalk.greet",
+                "smalltalk.thanks",
+                "smalltalk.bye"
+              ],
+              "perceptrons": [
+                [
+                  3.4188036918640137,
+                  2.639620780944824,
+                  7.057353973388672,
+                  0.6698450446128845,
+                  1.9535847902297974,
+                  3.2496659755706787,
+                  1.0467373132705688,
+                  0.49622800946235657,
+                  1.0142395496368408,
+                  -6.352278232574463,
+                  -0.2829705774784088,
+                  -0.2829705774784088,
+                  -2.6337358951568604,
+                  -0.6798566579818726,
+                  -2.0967206954956055,
+                  -4.775143146514893,
+                  -2.667703866958618,
+                  -0.6390830874443054,
+                  0,
+                  -0.008967306464910507,
+                  -0.2882176339626312,
+                  -0.8414753079414368,
+                  -0.8414753079414368,
+                  -0.2882176339626312,
+                  -0.5391463041305542,
+                  -0.5391463041305542,
+                  -0.005455181933939457,
+                  -0.005455181933939457,
+                  0,
+                  0,
+                  0,
+                  0,
+                  -0.022288737818598747,
+                  -0.022288737818598747,
+                  -0.022288737818598747,
+                  -0.022288737818598747,
+                  -0.022288737818598747,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  -0.05780482292175293,
+                  -0.021951064467430115,
+                  -0.0355401448905468,
+                  -0.024928662925958633,
+                  -0.046035896986722946,
+                  -0.033385518938302994,
+                  -0.04217899218201637,
+                  -0.021574703976511955,
+                  -0.03076031617820263,
+                  -0.23481781282714945
+                ],
+                [
+                  1.3033620119094849,
+                  2.6584889888763428,
+                  -5.61305570602417,
+                  1.92451810836792,
+                  0.35800325870513916,
+                  -0.4655030071735382,
+                  0.06779487431049347,
+                  -0.1631304770708084,
+                  -0.9173883199691772,
+                  8.417957305908203,
+                  1.7780338525772095,
+                  1.7780338525772095,
+                  0.19259732961654663,
+                  1.353039264678955,
+                  -0.8552262187004089,
+                  -1.9118705987930298,
+                  -0.3160165548324585,
+                  -0.06172854080796242,
+                  -0.661975622177124,
+                  -0.8196923136711121,
+                  -0.5756609439849854,
+                  -0.4662472903728485,
+                  -0.4662472903728485,
+                  -0.5756609439849854,
+                  -0.5164690017700195,
+                  -0.15333092212677002,
+                  -0.42678213119506836,
+                  -0.6351577639579773,
+                  -0.10008320212364197,
+                  -0.10008320212364197,
+                  -0.1437607705593109,
+                  -0.1437607705593109,
+                  -0.04254316911101341,
+                  -0.04254316911101341,
+                  -0.04254316911101341,
+                  -0.04254316911101341,
+                  -0.04254316911101341,
+                  -0.5847773551940918,
+                  -0.40948718786239624,
+                  -0.20569252967834473,
+                  -0.20569252967834473,
+                  -0.20569252967834473,
+                  -0.048628490418195724,
+                  -0.048628490418195724,
+                  -0.048628490418195724,
+                  -0.07268828898668289,
+                  -0.02524697035551071,
+                  -0.03703397512435913,
+                  -0.030753137543797493,
+                  -0.0603267103433609,
+                  -0.034379974007606506,
+                  -0.05504358187317848,
+                  -0.02621091529726982,
+                  -0.03103841096162796,
+                  -0.15049548680929536
+                ],
+                [
+                  -2.7173235416412354,
+                  -2.7355153560638428,
+                  6.751181125640869,
+                  -0.24949686229228973,
+                  -2.9338104724884033,
+                  -2.7641103267669678,
+                  0.13718393445014954,
+                  0.07744837552309036,
+                  -0.5502060651779175,
+                  -0.037272557616233826,
+                  -0.00456857867538929,
+                  -0.00456857867538929,
+                  0.44568631052970886,
+                  -0.009095973335206509,
+                  2.8474926948547363,
+                  5.270020961761475,
+                  3.106058120727539,
+                  0.7066460251808167,
+                  -1.4059056043624878,
+                  -6.938675403594971,
+                  -0.06622862815856934,
+                  -0.14055182039737701,
+                  -0.14055182039737701,
+                  -0.06622862815856934,
+                  -0.12184235453605652,
+                  -0.043908603489398956,
+                  -0.01878407597541809,
+                  -0.0637253150343895,
+                  -0.020842986181378365,
+                  -0.020842986181378365,
+                  -0.030853180214762688,
+                  -0.030853180214762688,
+                  -0.05481244996190071,
+                  -0.05481244996190071,
+                  -0.05481244996190071,
+                  -0.05481244996190071,
+                  -0.05481244996190071,
+                  -0.07324647903442383,
+                  -0.8151988983154297,
+                  -0.027036769315600395,
+                  -0.027036769315600395,
+                  -0.027036769315600395,
+                  -0.7638437747955322,
+                  -0.7638437747955322,
+                  -0.7638437747955322,
+                  -0.11067656427621841,
+                  -0.042275331914424896,
+                  -0.045615579932928085,
+                  -0.04165853559970856,
+                  -0.09400864690542221,
+                  -0.04202984273433685,
+                  -0.08471561223268509,
+                  -0.0349951907992363,
+                  -0.037438247352838516,
+                  -0.9712651485241558
+                ],
+                [
+                  -0.565477728843689,
+                  -0.7197898626327515,
+                  -5.8239288330078125,
+                  1.4458130598068237,
+                  -0.818885862827301,
+                  -0.10612468421459198,
+                  -0.8558060526847839,
+                  -0.9000800251960754,
+                  -0.10880249738693237,
+                  -0.8451617360115051,
+                  -0.4458159804344177,
+                  -0.4458159804344177,
+                  0.029689965769648552,
+                  -0.10370044410228729,
+                  -1.1298582553863525,
+                  2.830101728439331,
+                  1.838431715965271,
+                  -0.40476754307746887,
+                  2.075436592102051,
+                  8.143699645996094,
+                  -0.12524639070034027,
+                  -0.2042934149503708,
+                  -0.2042934149503708,
+                  -0.12524639070034027,
+                  -0.2928794324398041,
+                  -0.02214788645505905,
+                  -0.05305882543325424,
+                  -0.22132904827594757,
+                  -0.08684484660625458,
+                  -0.08684484660625458,
+                  -0.13719840347766876,
+                  -0.13719840347766876,
+                  -0.07895419746637344,
+                  -0.07895419746637344,
+                  -0.07895419746637344,
+                  -0.07895419746637344,
+                  -0.07895419746637344,
+                  -0.38464587926864624,
+                  -0.3205336630344391,
+                  -0.1468372344970703,
+                  -0.1468372344970703,
+                  -0.1468372344970703,
+                  -0.05268118157982826,
+                  -0.05268118157982826,
+                  -0.05268118157982826,
+                  -0.1729981154203415,
+                  -0.06360955536365509,
+                  -0.10120773315429688,
+                  -0.06377071887254715,
+                  -0.13527260720729828,
+                  -0.09466157853603363,
+                  -0.12895196676254272,
+                  -0.06241697072982788,
+                  -0.08657781779766083,
+                  -0.14933656201639026
+                ],
+                [
+                  -0.04481446370482445,
+                  -0.07637467980384827,
+                  -1.4644476175308228,
+                  -2.112039566040039,
+                  4.4681854248046875,
+                  -1.3917101621627808,
+                  -1.4698535203933716,
+                  1.9325555562973022,
+                  -0.0023831455036997795,
+                  -0.5541216731071472,
+                  -0.4905039072036743,
+                  -0.4905039072036743,
+                  -0.989113986492157,
+                  -0.026119835674762726,
+                  -0.10660789906978607,
+                  -0.01295185461640358,
+                  0,
+                  0,
+                  0,
+                  0,
+                  3.0437819957733154,
+                  1.8544881343841553,
+                  1.8544881343841553,
+                  3.0437819957733154,
+                  0.7240224480628967,
+                  3.4021613597869873,
+                  2.7536160945892334,
+                  1.9133704900741577,
+                  -1.830453634262085,
+                  -1.830453634262085,
+                  -0.8408771753311157,
+                  -0.8408771753311157,
+                  -0.10913177579641342,
+                  -0.10913177579641342,
+                  -0.10913177579641342,
+                  -0.10913177579641342,
+                  -0.10913177579641342,
+                  -0.25046783685684204,
+                  -0.23387575149536133,
+                  -0.09074410051107407,
+                  -0.09074410051107407,
+                  -0.09074410051107407,
+                  -0.07573619484901428,
+                  -0.07573619484901428,
+                  -0.07573619484901428,
+                  -0.2497190237045288,
+                  -0.09220936894416809,
+                  -0.15469035506248474,
+                  -0.09252852201461792,
+                  -0.19547757506370544,
+                  -0.14544972777366638,
+                  -0.17591604590415955,
+                  -0.07807441055774689,
+                  -0.13408835232257843,
+                  0.04051835984736625
+                ],
+                [
+                  -0.13910330832004547,
+                  -0.29136738181114197,
+                  -0.23049457371234894,
+                  -1.182547688484192,
+                  -2.769592046737671,
+                  -0.025368183851242065,
+                  -0.2917465269565582,
+                  -1.9430603981018066,
+                  -0.028848877176642418,
+                  -0.4357026219367981,
+                  -0.2017025202512741,
+                  -0.2017025202512741,
+                  2.2395098209381104,
+                  -0.13797682523727417,
+                  -0.5276274085044861,
+                  -0.5486224889755249,
+                  0,
+                  0,
+                  -0.4462902843952179,
+                  -0.4462902843952179,
+                  -0.8203088641166687,
+                  0.9892895221710205,
+                  0.9892895221710205,
+                  -0.8203088641166687,
+                  4.0160298347473145,
+                  -1.6129692792892456,
+                  -0.55882728099823,
+                  2.183216094970703,
+                  2.87080979347229,
+                  2.87080979347229,
+                  2.7684900760650635,
+                  2.7684900760650635,
+                  2.79514741897583,
+                  2.79514741897583,
+                  2.79514741897583,
+                  2.79514741897583,
+                  2.79514741897583,
+                  -1.32321035861969,
+                  -1.2288898229599,
+                  -0.5279895067214966,
+                  -0.5279895067214966,
+                  -0.5279895067214966,
+                  -0.4133283197879791,
+                  -0.4133283197879791,
+                  -0.4133283197879791,
+                  -0.5452096462249756,
+                  -0.19964434206485748,
+                  -0.3759204149246216,
+                  -0.22955548763275146,
+                  -0.42280396819114685,
+                  -0.3566129207611084,
+                  -0.3870551586151123,
+                  -0.19851069152355194,
+                  -0.3422274589538574,
+                  0.3099769309695372
+                ],
+                [
+                  -0.1153285950422287,
+                  -0.3425314128398895,
+                  -0.6873093843460083,
+                  -1.9611055850982666,
+                  -1.071114420890808,
+                  -0.03085111267864704,
+                  -0.8527044653892517,
+                  -0.8527044653892517,
+                  -0.022534143179655075,
+                  -0.6779342889785767,
+                  -0.3322265148162842,
+                  -0.3322265148162842,
+                  3.284925699234009,
+                  -0.19730664789676666,
+                  0.9104381203651428,
+                  -0.9925292134284973,
+                  0,
+                  -0.01159900426864624,
+                  -0.3884369432926178,
+                  -0.3884369432926178,
+                  -0.5695304274559021,
+                  -0.6363421082496643,
+                  -0.6363421082496643,
+                  -0.5695304274559021,
+                  -1.2869517803192139,
+                  0,
+                  -0.5474840998649597,
+                  -1.196472406387329,
+                  -0.6142957806587219,
+                  -0.6142957806587219,
+                  -0.5912282466888428,
+                  -0.5912282466888428,
+                  -0.07884866744279861,
+                  -0.07884866744279861,
+                  -0.07884866744279861,
+                  -0.07884866744279861,
+                  -0.07884866744279861,
+                  5.419896602630615,
+                  5.1920294761657715,
+                  1.7361632585525513,
+                  1.7361632585525513,
+                  1.7361632585525513,
+                  1.5082327127456665,
+                  1.5082327127456665,
+                  1.5082327127456665,
+                  -0.4718679189682007,
+                  -0.18530084192752838,
+                  -0.3751073181629181,
+                  -0.1903993934392929,
+                  -0.36239883303642273,
+                  -0.37404343485832214,
+                  -0.33062025904655457,
+                  -0.16304296255111694,
+                  -0.3727128207683563,
+                  0.3757777400851976
+                ],
+                [
+                  -0.6380802392959595,
+                  -0.6621116399765015,
+                  -0.6467199325561523,
+                  -1.5822107791900635,
+                  -0.8820509314537048,
+                  -0.07485965639352798,
+                  -0.12161657959222794,
+                  -0.3163367211818695,
+                  -0.07652061432600021,
+                  -0.4580393135547638,
+                  -0.05154755339026451,
+                  -0.05154755339026451,
+                  -1.718171238899231,
+                  -0.012015740387141705,
+                  -0.29597601294517517,
+                  -0.7273613214492798,
+                  -0.5535121560096741,
+                  -0.09149083495140076,
+                  -0.050611596554517746,
+                  -0.47625720500946045,
+                  -0.5273154377937317,
+                  -0.7019510269165039,
+                  -0.7019510269165039,
+                  -0.5273154377937317,
+                  -0.5789961218833923,
+                  -0.1621876358985901,
+                  -0.06391880661249161,
+                  -0.40456268191337585,
+                  -0.07243407517671585,
+                  -0.07243407517671585,
+                  -0.32012975215911865,
+                  -0.32012975215911865,
+                  -0.6676573157310486,
+                  -0.6676573157310486,
+                  -0.6676573157310486,
+                  -0.6676573157310486,
+                  -0.6676573157310486,
+                  -0.8441669344902039,
+                  -0.7690986394882202,
+                  -0.2605817914009094,
+                  -0.2605817914009094,
+                  -0.2605817914009094,
+                  -0.18713413178920746,
+                  -0.18713413178920746,
+                  -0.18713413178920746,
+                  10.127176284790039,
+                  1.2629605531692505,
+                  10.7698974609375,
+                  -1.3654736280441284,
+                  -1.981477975845337,
+                  -3.2343146800994873,
+                  -1.9764125347137451,
+                  -1.3604083061218262,
+                  -3.2120707035064697,
+                  3.3486759296662
+                ],
+                [
+                  -0.4903595447540283,
+                  -0.5170207023620605,
+                  -0.613377571105957,
+                  -1.2966128587722778,
+                  -0.7383399605751038,
+                  -0.080921970307827,
+                  -0.13279494643211365,
+                  -0.27782851457595825,
+                  -0.07918291538953781,
+                  -0.32510024309158325,
+                  -0.0557149276137352,
+                  -0.0557149276137352,
+                  -1.4193543195724487,
+                  -0.01333047728985548,
+                  -0.2546302378177643,
+                  -0.5725070238113403,
+                  -0.40913209319114685,
+                  -0.06548646837472916,
+                  -0.052129313349723816,
+                  -0.34970369935035706,
+                  -0.39837369322776794,
+                  -0.546269416809082,
+                  -0.546269416809082,
+                  -0.39837369322776794,
+                  -0.4672877788543701,
+                  -0.11317939311265945,
+                  -0.06651736795902252,
+                  -0.3182634711265564,
+                  -0.0761919766664505,
+                  -0.0761919766664505,
+                  -0.23188720643520355,
+                  -0.23188720643520355,
+                  -0.5340811014175415,
+                  -0.5340811014175415,
+                  -0.5340811014175415,
+                  -0.5340811014175415,
+                  -0.5340811014175415,
+                  -0.6332974433898926,
+                  -0.5694399476051331,
+                  -0.21482700109481812,
+                  -0.21482700109481812,
+                  -0.21482700109481812,
+                  -0.1560002565383911,
+                  -0.1560002565383911,
+                  -0.1560002565383911,
+                  -2.542210340499878,
+                  -0.6971772313117981,
+                  -2.50631046295166,
+                  2.680293083190918,
+                  9.269083023071289,
+                  11.484314918518066,
+                  2.1105458736419678,
+                  -4.495545864105225,
+                  -2.538184404373169,
+                  2.57818832104947
+                ],
+                [
+                  -0.448375403881073,
+                  -0.46751391887664795,
+                  -0.5219327807426453,
+                  -1.148545503616333,
+                  -0.6461910009384155,
+                  -0.0784403383731842,
+                  -0.11736805737018585,
+                  -0.23301373422145844,
+                  -0.06219593435525894,
+                  -0.3007179796695709,
+                  -0.040853045880794525,
+                  -0.040853045880794525,
+                  -1.2541160583496094,
+                  -0.013487153686583042,
+                  -0.2257847636938095,
+                  -0.5169664621353149,
+                  -0.37668800354003906,
+                  -0.06381510198116302,
+                  -0.042313434183597565,
+                  -0.3211069703102112,
+                  -0.3654680848121643,
+                  -0.49312400817871094,
+                  -0.49312400817871094,
+                  -0.3654680848121643,
+                  -0.41721847653388977,
+                  -0.10420781373977661,
+                  -0.05254402384161949,
+                  -0.2892511188983917,
+                  -0.059528008103370667,
+                  -0.059528008103370667,
+                  -0.21742714941501617,
+                  -0.21742714941501617,
+                  -0.4729117453098297,
+                  -0.4729117453098297,
+                  -0.4729117453098297,
+                  -0.4729117453098297,
+                  -0.4729117453098297,
+                  -0.5836029648780823,
+                  -0.5247305035591125,
+                  -0.19883133471012115,
+                  -0.19883133471012115,
+                  -0.19883133471012115,
+                  -0.14224527776241302,
+                  -0.14224527776241302,
+                  -0.14224527776241302,
+                  -2.3008596897125244,
+                  -0.6157605051994324,
+                  -2.2665486335754395,
+                  -0.3808287978172302,
+                  -5.529879093170166,
+                  -2.2529265880584717,
+                  3.351583957672119,
+                  8.463728904724121,
+                  11.725729942321777,
+                  2.34701806735453
+                ]
+              ]
+            }
+          }
+        }
+      }
+    },
+    "intentDomains": {},
+    "extraSentences": [
+      [
+        "vi",
+        "doanh thu hôm nay"
+      ],
+      [
+        "vi",
+        "hôm nay bán được bao nhiêu"
+      ],
+      [
+        "vi",
+        "doanh thu ngày hôm nay"
+      ],
+      [
+        "vi",
+        "doanh thu tháng này"
+      ],
+      [
+        "vi",
+        "tổng tiền bán hàng tháng này"
+      ],
+      [
+        "vi",
+        "tháng này cửa hàng thu bao nhiêu"
+      ],
+      [
+        "vi",
+        "có bao nhiêu đơn hàng hôm nay"
+      ],
+      [
+        "vi",
+        "số đơn hôm nay"
+      ],
+      [
+        "vi",
+        "hôm nay có mấy đơn"
+      ],
+      [
+        "vi",
+        "đơn hàng trong tuần này"
+      ],
+      [
+        "vi",
+        "số đơn tuần này"
+      ],
+      [
+        "vi",
+        "top sản phẩm bán chạy"
+      ],
+      [
+        "vi",
+        "sản phẩm nào bán nhiều nhất"
+      ],
+      [
+        "vi",
+        "top 5 mặt hàng bán chạy"
+      ],
+      [
+        "vi",
+        "sản phẩm nào sắp hết hàng"
+      ],
+      [
+        "vi",
+        "mặt hàng nào còn ít"
+      ],
+      [
+        "vi",
+        "kiểm tra tồn kho thấp"
+      ],
+      [
+        "vi",
+        "khách hàng mới"
+      ],
+      [
+        "vi",
+        "khách hàng vừa đăng ký"
+      ],
+      [
+        "vi",
+        "có ai mới mua hàng không"
+      ],
+      [
+        "vi",
+        "chào"
+      ],
+      [
+        "vi",
+        "xin chào"
+      ],
+      [
+        "vi",
+        "hello"
+      ],
+      [
+        "vi",
+        "cảm ơn"
+      ],
+      [
+        "vi",
+        "thanks"
+      ],
+      [
+        "vi",
+        "biết ơn"
+      ],
+      [
+        "vi",
+        "tạm biệt"
+      ],
+      [
+        "vi",
+        "bye"
+      ]
+    ]
+  },
+  "ner": {
+    "settings": {
+      "tag": "ner",
+      "entityPreffix": "%",
+      "entitySuffix": "%"
+    },
+    "rules": {}
+  },
+  "nlgManager": {
+    "settings": {
+      "tag": "nlg-manager"
+    },
+    "responses": {
+      "vi": {
+        "smalltalk.greet": [
+          {
+            "answer": "Xin chào, tôi có thể giúp gì cho bạn?"
+          }
+        ],
+        "smalltalk.thanks": [
+          {
+            "answer": "Không có gì, rất vui được hỗ trợ bạn!"
+          }
+        ],
+        "smalltalk.bye": [
+          {
+            "answer": "Tạm biệt, chúc bạn một ngày tốt lành!"
+          }
+        ]
+      }
+    }
+  },
+  "actionManager": {
+    "settings": {
+      "tag": "action-manager"
+    },
+    "actions": {}
+  },
+  "slotManager": {}
+}
