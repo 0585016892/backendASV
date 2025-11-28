@@ -4,6 +4,9 @@ const db = require("../db"); // Đảm bảo bạn đã kết nối đúng với
 const multer = require("multer");
 const path = require("path");
 const ExcelJS = require("exceljs");
+const { writeLog } = require("../utils/logService");
+const { log } = require("console");
+
 // Cấu hình nơi lưu ảnh
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -185,8 +188,9 @@ router.post(
       brand,
       categoryId,
       couponId,
+      userId
     } = req.body;
-
+    
     const image =
       req.files && req.files.image ? req.files.image[0].filename : null;
     const subImages =
@@ -254,6 +258,38 @@ router.post(
             .status(500)
             .json({ error: "Lỗi khi thêm sản phẩm vào cơ sở dữ liệu." });
         }
+        // ----------------------------
+          // GHI LOG HỆ THỐNG
+          // ----------------------------
+        const userIdAdmin = userId || null;
+        const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
+        const userAgent = req.headers["user-agent"];
+
+        // Ghi log theo format bạn muốn
+        writeLog(
+          userIdAdmin,
+          "create",
+          "product",
+          `Người dùng thêm sản phẩm ${name}`,
+          null,
+          JSON.stringify({
+            name,
+            slug,
+            image,
+            description,
+            quantity,
+            size: sizeStr,
+            color: colorStr,
+            price,
+            status,
+            brand,
+            categoryId,
+            couponId: couponId || null
+          }),
+          ip,
+          userAgent
+        );
+          // ----------------------------
 
         if (subImages.length > 0) {
           const subImgSQL = `

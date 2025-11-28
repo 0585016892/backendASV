@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const db = require("../db"); // Đảm bảo bạn đã kết nối đúng với MySQL
 const multer = require("multer");
+const { writeLog } = require("../utils/logService");
 
 // Middleware để xử lý JSON và x-www-form-urlencoded
 router.use(express.json());
@@ -95,7 +96,7 @@ router.get("/parents", (req, res) => {
 });
 // Route để thêm danh mục mới
 router.post("/add", upload.none(), (req, res) => {
-  const { name, slug, parent_id, description, status } = req.body;
+  const { name, slug, parent_id, description, status, userID } = req.body;
 
   // Kiểm tra thông tin nhập vào
   if (!name || !slug || !status) {
@@ -103,7 +104,25 @@ router.post("/add", upload.none(), (req, res) => {
       error: "Vui lòng nhập đầy đủ tên, slug và trạng thái danh mục.",
     });
   }
-
+// ----------------------------
+            // GHI LOG HỆ THỐNG
+            // ----------------------------
+          const userIdAdmin = userID || null;
+          const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
+          const userAgent = req.headers["user-agent"];
+  
+          // Ghi log theo format bạn muốn
+          writeLog(
+            userIdAdmin,
+            "create",
+            "category", // module là màu, không phải product
+            `Người dùng thêm danh mục ${name}`,
+            null,
+            JSON.stringify({ name, description, status }),
+            ip,
+            userAgent
+          );
+            // ----------------------------
   // SQL query để thêm danh mục vào cơ sở dữ liệu
   const sql = `
     INSERT INTO categories (name, slug, parent_id, description, status)
@@ -206,7 +225,7 @@ router.get("/:id", (req, res) => {
 // Route để cập nhật danh mục
 router.put("/update/:id", (req, res) => {
   const { id } = req.params;
-  const { name, slug, description, status } = req.body;
+  const { name, slug, description, status,userID } = req.body;
 
   // Kiểm tra nếu các trường bắt buộc không có dữ liệu
   if (!name || !slug || !status) {
@@ -224,7 +243,25 @@ router.put("/update/:id", (req, res) => {
       status = ?
     WHERE id = ?
   `;
-
+// ----------------------------
+            // GHI LOG HỆ THỐNG
+            // ----------------------------
+          const userIdAdmin = userID || null;
+          const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
+          const userAgent = req.headers["user-agent"];
+  
+          // Ghi log theo format bạn muốn
+          writeLog(
+            userIdAdmin,
+            "create",
+            "category", // module là màu, không phải product
+            `Người dùng sửa danh mục ${name}`,
+            null,
+            JSON.stringify({ name, description, status }),
+            ip,
+            userAgent
+          );
+            // ----------------------------
   db.query(sql, [name, slug, description || "", status, id], (err, result) => {
     if (err) {
       console.error("Lỗi khi cập nhật danh mục:", err);
@@ -250,21 +287,51 @@ router.put("/update/:id", (req, res) => {
 // API để xóa danh mục
 router.delete("/delete/:id", (req, res) => {
   const { id } = req.params;
-  const sql = "DELETE FROM categories WHERE id = ?";
+  const { userID } = req.body;
 
-  db.query(sql, [id], (err, result) => {
+  // Lấy dữ liệu cũ để ghi log
+  const getOld = "SELECT * FROM categories WHERE id = ?";
+
+  db.query(getOld, [id], (err, rows) => {
     if (err) {
-      console.error("Lỗi khi xóa danh mục:", err);
-      return res.status(500).json({ error: "Lỗi khi xóa danh mục." });
+      console.error("Lỗi truy vấn:", err);
+      return res.status(500).json({ error: "Lỗi truy vấn cơ sở dữ liệu." });
     }
 
-    if (result.affectedRows === 0) {
-      return res
-        .status(404)
-        .json({ message: "Không tìm thấy danh mục để xóa." });
-    }
+    const oldDanhmuc = rows[0] || null;
 
-    res.status(200).json({ message: `Xóa danh mục thành công!` });
+    // Bắt đầu xóa
+    const sql = "DELETE FROM categories WHERE id = ?";
+    db.query(sql, [id], (err, result) => {
+      if (err) {
+        console.error("Lỗi khi xóa danh mục:", err);
+        return res.status(500).json({ error: "Lỗi khi xóa danh mục." });
+      }
+
+      if (result.affectedRows === 0) {
+        return res
+          .status(404)
+          .json({ message: "Không tìm thấy danh mục để xóa." });
+      }
+
+      // --- GHI LOG ---
+      const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
+      const userAgent = req.headers["user-agent"];
+
+      writeLog(
+        userID || null,
+        "delete",
+        "category",
+        `Người dùng đã xóa danh mục: ${oldDanhmuc ? oldDanhmuc.name : "Không tìm thấy"}`,
+        null,
+        JSON.stringify({ oldDanhmuc }),
+        ip,
+        userAgent
+      );
+      // --------------
+
+      res.status(200).json({ message: "Xóa danh mục thành công!" });
+    });
   });
 });
 

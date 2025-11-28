@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const db = require("../db");
-
+const { writeLog } = require("../utils/logService");
 // Lấy danh sách màu có phân trang
 router.get("/", (req, res) => {
   const page = parseInt(req.query.page) || 1;
@@ -38,10 +38,29 @@ router.get("/all", (req, res) => {
 
 // Thêm màu mới
 router.post("/", (req, res) => {
-  const { name, code, status } = req.body;
+  const { name, code, status,userID } = req.body;
   if (!name) return res.status(400).json({ message: "Tên màu là bắt buộc" });
 
   const query = "INSERT INTO colors (name, code, status) VALUES (?, ?, ?)";
+  // ----------------------------
+            // GHI LOG HỆ THỐNG
+            // ----------------------------
+          const userIdAdmin = userID || null;
+          const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
+          const userAgent = req.headers["user-agent"];
+  
+          // Ghi log theo format bạn muốn
+          writeLog(
+            userIdAdmin,
+            "create",
+            "color", // module là màu, không phải product
+            `Người dùng thêm màu ${name}`,
+            null,
+            JSON.stringify({ name, code, status }),
+            ip,
+            userAgent
+          );
+            // ----------------------------
   db.query(query, [name, code, status], (err, result) => {
     if (err) return res.status(500).json({ message: "Lỗi khi thêm màu" });
     res.json({ message: "Thêm màu thành công", id: result.insertId });
@@ -51,9 +70,28 @@ router.post("/", (req, res) => {
 // Cập nhật màu
 router.put("/:id", (req, res) => {
   const { id } = req.params;
-  const { name, code, status } = req.body;
+  const { name, code, status,userID } = req.body;
 
   const query = "UPDATE colors SET name = ?, code = ?, status = ? WHERE id = ?";
+        // ----------------------------
+            // GHI LOG HỆ THỐNG
+            // ----------------------------
+          const userIdAdmin = userID || null;
+          const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
+          const userAgent = req.headers["user-agent"];
+  
+          // Ghi log theo format bạn muốn
+          writeLog(
+            userIdAdmin,
+            "update",
+            "color", // module là màu, không phải product
+            `Người dùng cập nhật màu ${name}`,
+            null,
+            JSON.stringify({ name, code, status }),
+            ip,
+            userAgent
+          );
+            // ----------------------------
   db.query(query, [name, code, status, id], (err) => {
     if (err) return res.status(500).json({ message: "Lỗi khi cập nhật màu" });
     res.json({ message: "Cập nhật màu thành công" });
@@ -63,11 +101,46 @@ router.put("/:id", (req, res) => {
 // Xóa màu
 router.delete("/:id", (req, res) => {
   const { id } = req.params;
-  const query = "DELETE FROM colors WHERE id = ?";
-  db.query(query, [id], (err) => {
-    if (err) return res.status(500).json({ message: "Lỗi khi xóa màu" });
-    res.json({ message: "Xóa màu thành công" });
+  const { userID } = req.body;
+
+  // Lấy thông tin màu trước khi xóa để ghi log chính xác
+  const getColorSQL = "SELECT name, code, status FROM colors WHERE id = ?";
+
+  db.query(getColorSQL, [id], (err, result) => {
+    if (err) return res.status(500).json({ message: "Lỗi khi lấy thông tin màu" });
+
+    const oldColor = result[0] || null;
+
+    // ----------------------------
+    // GHI LOG HỆ THỐNG
+    // ----------------------------
+    const userIdAdmin = userID || null;
+    const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
+    const userAgent = req.headers["user-agent"];
+
+    writeLog(
+      userIdAdmin,
+      "delete",
+      "color",
+      `Người dùng đã xóa màu: ${oldColor ? oldColor.name : "Không tìm thấy"}`,
+      JSON.stringify(oldColor),
+      null,
+      ip,
+      userAgent
+    );
+    // ----------------------------
+
+    // Tiến hành xóa
+    const deleteSQL = "DELETE FROM colors WHERE id = ?";
+
+    db.query(deleteSQL, [id], (errDelete) => {
+      if (errDelete)
+        return res.status(500).json({ message: "Lỗi khi xóa màu" });
+
+      res.json({ message: "Xóa màu thành công" });
+    });
   });
 });
+
 
 module.exports = router;

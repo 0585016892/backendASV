@@ -3,7 +3,7 @@ const router = express.Router();
 const db = require("../db");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-
+const { writeLog } = require("../utils/logService");
 const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret";
 
 // Đăng nhập
@@ -53,11 +53,29 @@ router.post("/login", async (req, res) => {
           JWT_SECRET,
           { expiresIn: "1d" }
         );
+        // =============================
+        // 🚀 GHI LOG — DÙNG writeLog()
+        // =============================
 
+        const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+        const userAgent = req.headers['user-agent'];
+
+        writeLog(
+          user.id,                 // user_id
+          "login",                 // action
+          "auth",                  // module
+          `Người dùng ${user.full_name} đăng nhập thành công`, // description
+          null,                    // old_data
+          JSON.stringify({ status: "logged_in" }),             // new_data
+          ip,
+          userAgent
+        );
+
+        // =============================
         res.json({
           token,
           user: {
-            id: user.id,
+             id: user.id,
             full_name: user.full_name,
             email: user.email,
             avatar: user.avatar,

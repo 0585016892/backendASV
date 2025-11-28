@@ -73,6 +73,7 @@ const collectionRoutes = require("./routes/collectionRoutes");
 const assistantRoutes = require("./routes/assistant");
 const reviewsRoutes = require("./routes/reviewRoutes");
 const settingsRoute = require("./routes/settingsRoute");
+const logRoutes = require("./routes/logRoutes");
 // API Routes
 app.use("/api/slides", slideRoutes);
 app.use("/api/footer", footerRoutes);
@@ -99,6 +100,8 @@ app.use("/api/collections", collectionRoutes);
 app.use("/api/assistant", assistantRoutes);
 app.use("/api/reviews", reviewsRoutes);
 app.use("/api/settings", settingsRoute);
+app.use("/api/log", logRoutes);
+
 app.get("/api/test", (req, res) => {
   res.send("✅ Backend hoạt động");
 });

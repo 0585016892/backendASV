@@ -10,7 +10,8 @@ const crypto = require("crypto");
 require("dotenv").config();
 const https = require("https");
 const getSettings = require("../utils/getSettings");
-
+const { writeLog } = require("../utils/logService");
+const { log } = require("console");
 async function sendEmails({
   orderId,
   customer,
@@ -854,20 +855,24 @@ router.delete("/delete/:id", (req, res) => {
 router.put("/:id/status", async (req, res) => {
   const orderId = req.params.id;
   const { status } = req.body;
+  const { userID } = req.body;
   const io = req.app.get("io");
+  const userIdAdmin = userID || null;
 
   try {
     const rows = await new Promise((resolve, reject) => {
-      const sql = "SELECT customer_id FROM orders WHERE id = ?";
+      const sql = "SELECT customer_id, status FROM orders WHERE id = ?";
       db.query(sql, [orderId], (err, rows) => {
         if (err) return reject(err);
         resolve(rows);
       });
     });
 
-    if (rows.length === 0) return res.status(404).json({ success: false, message: "Không tìm thấy đơn hàng" });
+    if (rows.length === 0)
+      return res.status(404).json({ success: false, message: "Không tìm thấy đơn hàng" });
 
-    const userId = rows[0].customer_id;
+    const customerId = rows[0].customer_id;
+    const oldStatus = rows[0].status;
 
     await new Promise((resolve, reject) => {
       const sql = "UPDATE orders SET status = ? WHERE id = ?";
@@ -877,15 +882,31 @@ router.put("/:id/status", async (req, res) => {
       });
     });
 
-    // Gọi hàm thông báo
-    if (userId) {
-      notifyOrderStatusChange(io, orderId, userId, status);
-    }
+    // ----------------------------
+    // GHI LOG HỆ THỐNG
+    // ----------------------------
+    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+    const userAgent = req.headers['user-agent'];
 
-    // Emit cho tất cả (optional)
+    writeLog(
+      userIdAdmin,
+      "update",
+      "orders",
+      `Cập nhật trạng thái đơn hàng #${orderId}`,
+      JSON.stringify({ status: oldStatus }),
+      JSON.stringify({ status }),
+      ip,
+      userAgent
+    );
+
+    // Notify realtime
+    if (customerId) {
+      notifyOrderStatusChange(io, orderId, customerId, status);
+    }
     io.emit("orderUpdate", { orderId, status });
-    console.log("Emit orderUpdate", { orderId, status });
+
     res.json({ success: true, message: "Cập nhật trạng thái thành công" });
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, message: err.message });

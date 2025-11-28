@@ -3,6 +3,8 @@ const router = express.Router();
 const multer = require("multer");
 const path = require("path");
 const db = require("../db"); // Đảm bảo bạn đã kết nối đúng với MySQL
+const { writeLog } = require("../utils/logService");
+
 // Lấy danh sách khách hàng
 // Cấu hình multer lưu file
 const storage = multer.diskStorage({
@@ -142,6 +144,8 @@ router.put("/update/:id", (req, res) => {
 });
 // Xóa khách hàng
 router.delete("/delete/:id", (req, res) => {
+  const {userID } = req.body;
+
   db.query(
     "DELETE FROM customers WHERE id = ?",
     [req.params.id],
@@ -149,13 +153,34 @@ router.delete("/delete/:id", (req, res) => {
       if (err) return res.status(500).json({ error: "Xoá thất bại" });
       res.json({ message: "Đã xoá khách hàng" });
     }
+    
   );
+  
+  // ----------------------------1
+            // GHI LOG HỆ THỐNG
+            // ----------------------------
+          const userIdAdmin = userID || null;
+          const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
+          const userAgent = req.headers["user-agent"];
+  
+          // Ghi log theo format bạn muốn
+          writeLog(
+            userIdAdmin,
+            "delete",
+            "customer", // module là màu, không phải product
+            `Người dùng đã xóa khách hàng `,
+            null,
+            JSON.stringify({  }),
+            ip,
+            userAgent
+          );
+            // ----------------------------
 });
 // Cập nhật trạng thái khách hàng
 router.patch("/update_status/:id", (req, res) => {
   console.log("Dữ liệu request body:", req.body); // Log dữ liệu nhận được từ Postman
   const { id } = req.params;
-  const { status } = req.body;
+  const { status,userID } = req.body;
 
   const allowed = ["active", "inactive"];
   if (!allowed.includes(status)) {
@@ -179,6 +204,26 @@ router.patch("/update_status/:id", (req, res) => {
       message: `Cập nhật trạng thái khách hàng với ID ${id} thành ${status}`,
     });
   });
+
+  // ----------------------------1
+            // GHI LOG HỆ THỐNG
+            // ----------------------------
+          const userIdAdmin = userID || null;
+          const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
+          const userAgent = req.headers["user-agent"];
+  
+          // Ghi log theo format bạn muốn
+          writeLog(
+            userIdAdmin,
+            "update",
+            "customer", // module là màu, không phải product
+            `Người dùng đã cập nhật trạng thái khách hàng `,
+            null,
+            JSON.stringify({ status }),
+            ip,
+            userAgent
+          );
+            // ----------------------------
 });
 router.get("/details/:id", (req, res) => {
   const customerId = req.params.id;
