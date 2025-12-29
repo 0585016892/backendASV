@@ -390,14 +390,14 @@ router.get("/", (req, res) => {
       sanpham.*, 
       categories.name AS categoryName,
       coupons.code AS couponCode
-    FROM 
-      sanpham
-    LEFT JOIN 
-      categories ON sanpham.categoryId = categories.id
-    LEFT JOIN
-      coupons ON sanpham.coupon_id = coupons.id  -- JOIN với bảng coupons để lấy thông tin mã giảm giá
+    FROM sanpham
+    LEFT JOIN categories 
+      ON sanpham.categoryId = categories.id
+    LEFT JOIN coupons 
+      ON sanpham.coupon_id = coupons.id
     ${whereClause}
-    LIMIT ${limit} OFFSET ${offset}
+    ORDER BY sanpham.created_at DESC
+    LIMIT ${limit} OFFSET ${offset};
   `;
 
   // Thực thi truy vấn đếm số lượng sản phẩm
