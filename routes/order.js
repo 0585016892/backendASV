@@ -60,12 +60,12 @@ async function sendEmails({
 
     // Email gửi khách hàng
     const customerMail = {
-      from: `"Âm Sắc Việt" <${settings.smtp_username}>`,
+      from: `"Thời Trang Việt" <${settings.smtp_username}>`,
       to: email,
       subject: `Xác nhận đơn hàng #${orderId}`,
       html: `
         <div style="font-family: Arial, sans-serif; color: #333; padding: 20px; line-height: 1.6;">
-          <h2 style="color: #2E86C1;">Cảm ơn bạn đã đặt hàng tại <strong>Âm Sắc Việt</strong>!</h2>
+          <h2 style="color: #2E86C1;">Cảm ơn bạn đã đặt hàng tại <strong>Thời Trang Việt</strong>!</h2>
           <p>Xin chào <strong>${customer}</strong>,</p>
           <p>Chúng tôi đã nhận được đơn hàng của bạn với thông tin như sau:</p>
 
@@ -104,19 +104,19 @@ async function sendEmails({
           }
 
           <p>Chúng tôi sẽ sớm xử lý và giao hàng đến bạn.</p>
-          <p style="margin-top: 30px;">Trân trọng,<br><strong>Âm Sắc Việt Team</strong></p>
+          <p style="margin-top: 30px;">Trân trọng,<br><strong>Thời Trang Việt</strong></p>
         </div>
       `,
     };
 
     // Email gửi admin
     const adminMail = {
-      from: `"Âm Sắc Việt" <${settings.smtp_username}>`,
+      from: `"Thời Trang Việt" <${settings.smtp_username}>`,
       to: settings.ADMIN_EMAIL || "tranhung6829@gmail.com",
       subject: `[MỚI] Đơn hàng #${orderId} từ ${customer}`,
       html: `
         <div style="font-family: Arial, sans-serif; line-height: 1.6; max-width: 600px; margin: auto; padding: 20px; background: #f9f9f9; border-radius: 8px; border: 1px solid #ddd;">
-          <h2 style="color: #2c3e50;">🛒 Thông báo đơn hàng mới từ <span style="color: #1abc9c;">Âm Sắc Việt</span></h2>
+          <h2 style="color: #2c3e50;">🛒 Thông báo đơn hàng mới từ <span style="color: #1abc9c;">Thời Trang Việt</span></h2>
           <p><strong>Mã đơn hàng:</strong> <span style="color: #e74c3c;">#${orderId}</span></p>
           <p><strong>Khách hàng:</strong> ${customer}</p>
           <p><strong>Điện thoại:</strong> ${phone}</p>
@@ -140,7 +140,7 @@ async function sendEmails({
           </div>
 
           <p style="margin-top: 30px;">🕐 <em>Vui lòng xử lý đơn hàng này sớm nhất có thể.</em></p>
-          <p style="color: #999; font-size: 13px;">Âm Sắc Việt Team<br/>https://amsacmau.vn</p>
+          <p style="color: #999; font-size: 13px;">Thời Trang Việt Team<br/>https://amsacmau.vn</p>
         </div>
       `,
     };
