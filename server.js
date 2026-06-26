@@ -11,14 +11,7 @@ const { initAttendanceSocket } = require("./sockets/attendanceSocket");
 const reviewSocket = require("./sockets/review");
 const server = http.createServer(app);
 // Middleware
-const allowedOrigins = [
-  "http://localhost:3000",
-  "http://localhost:3001",
-  "http://localhost:3002",
-  "https://admin-asv.vercel.app",
-  "https://amsacviet.vercel.app",
-  "https://www.amsacviet.online/"
-];
+const allowedOrigins = ["http://localhost:3000", "http://localhost:3001"];
 const io = new Server(server, {
   cors: {
     origin: function (origin, callback) {
@@ -32,17 +25,19 @@ const io = new Server(server, {
   },
 });
 app.set("io", io);
-app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, origin); // trả đúng origin
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
-  methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
-  credentials: true
-}));
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, origin); // trả đúng origin
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+    credentials: true,
+  }),
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use("/uploads", express.static(path.join(__dirname, "public", "uploads")));
@@ -110,7 +105,7 @@ reviewSocket(io);
 app.set("onlineUsers", onlineUsers);
 
 // Khởi động server
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 12003;
 server.listen(PORT, "0.0.0.0", () => {
   console.log(`🚀 Server + Socket.IO đang chạy tại ${PORT}`);
 });

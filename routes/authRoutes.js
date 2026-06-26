@@ -9,28 +9,40 @@ const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret";
 // Đăng nhập
 // Đăng nhập
 router.post("/login", async (req, res) => {
+  console.log("CALL API LOGIN");
+
   const { email, password } = req.body;
 
   // Lấy user
   const sql = `SELECT * FROM employees WHERE email = ? AND status = 'active'`;
   db.query(sql, [email], async (err, results) => {
     if (err || results.length === 0)
-      return res.status(401).json({ message: "Email hoặc mật khẩu không đúng" });
+      return res
+        .status(401)
+        .json({ message: "Email hoặc mật khẩu không đúng" });
 
     const user = results[0];
     const match = await bcrypt.compare(password, user.password);
-    if (!match) return res.status(401).json({ message: "Email hoặc mật khẩu không đúng" });
+    if (!match)
+      return res
+        .status(401)
+        .json({ message: "Email hoặc mật khẩu không đúng" });
 
     // Lấy cấu hình maintenance_mode
     const settingsSQL = `SELECT setting_value FROM settings WHERE setting_key = 'maintenance_mode' LIMIT 1`;
     db.query(settingsSQL, (err, settingRows) => {
-      if (err) return res.status(500).json({ message: "Lỗi khi kiểm tra chế độ bảo trì" });
+      if (err)
+        return res
+          .status(500)
+          .json({ message: "Lỗi khi kiểm tra chế độ bảo trì" });
 
       const maintenance_mode = settingRows[0]?.setting_value === "true";
 
       // Nếu đang bảo trì và không phải admin, từ chối đăng nhập
-      if (maintenance_mode && user.role !== 'admin') {
-        return res.status(403).json({ message: "Hệ thống đang bảo trì, vui lòng thử lại sau" });
+      if (maintenance_mode && user.role !== "admin") {
+        return res
+          .status(403)
+          .json({ message: "Hệ thống đang bảo trì, vui lòng thử lại sau" });
       }
 
       // Lấy danh sách quyền từ role
@@ -51,7 +63,7 @@ router.post("/login", async (req, res) => {
             permissions,
           },
           JWT_SECRET,
-          { expiresIn: "1d" }
+          { expiresIn: "1d" },
         );
 
         res.json({
@@ -158,7 +170,7 @@ router.post("/user/login", async (req, res) => {
         name: user.name,
       },
       JWT_SECRET,
-      { expiresIn: "7d" }
+      { expiresIn: "7d" },
     );
 
     const { password: _, ...userWithoutPassword } = user;

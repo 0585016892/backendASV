@@ -2,7 +2,10 @@ const express = require("express");
 const router = express.Router();
 const db = require("../db");
 const nodemailer = require("nodemailer");
-const { notifyNewOrder ,notifyOrderStatusChange} = require("../sockets/notiSocket");
+const {
+  notifyNewOrder,
+  notifyOrderStatusChange,
+} = require("../sockets/notiSocket");
 const { createVnpayUrl } = require("../utils/vnpay");
 const bcrypt = require("bcrypt");
 const moment = require("moment");
@@ -50,8 +53,8 @@ async function sendEmails({
     // Danh sách sản phẩm
     const itemsList = items
       .map(
-        i =>
-          `- ${i.name} (Size: ${i.size}, Màu: ${i.color}) | SL: ${i.quantity} | Giá: ${i.price.toLocaleString("vi-VN")} đ`
+        (i) =>
+          `- ${i.name} (Size: ${i.size}, Màu: ${i.color}) | SL: ${i.quantity} | Giá: ${i.price.toLocaleString("vi-VN")} đ`,
       )
       .join("\n");
 
@@ -160,27 +163,31 @@ const generateRandomPassword = () => {
     "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
   return Array.from(
     { length: 8 },
-    () => chars[Math.floor(Math.random() * chars.length)]
+    () => chars[Math.floor(Math.random() * chars.length)],
   ).join("");
 };
 
-
 // Hàm gọi API MoMo
-function createMoMoPayment(dbOrderId, amount, orderInfo, redirectUrl, ipnUrl, callback) {
+function createMoMoPayment(
+  dbOrderId,
+  amount,
+  orderInfo,
+  redirectUrl,
+  ipnUrl,
+  callback,
+) {
   const partnerCode = "MOMO";
   const accessKey = "F8BBA842ECF85";
   const secretKey = "K951B6PE1waDMi640xX08PD3vg6EkVlz";
-  
 
-// tạo orderId duy nhất
-  const momoOrderId  = `${dbOrderId}_${Date.now()}`;
-    const requestId = momoOrderId;
+  // tạo orderId duy nhất
+  const momoOrderId = `${dbOrderId}_${Date.now()}`;
+  const requestId = momoOrderId;
   // rawSignature theo đúng format trong docs
-const rawSignature =
+  const rawSignature =
     `accessKey=${accessKey}&amount=${amount}&extraData=&ipnUrl=${ipnUrl}` +
     `&orderId=${momoOrderId}&orderInfo=${orderInfo}&partnerCode=${partnerCode}` +
     `&redirectUrl=${redirectUrl}&requestId=${requestId}&requestType=payWithMethod`;
-
 
   const signature = crypto
     .createHmac("sha256", secretKey)
@@ -193,7 +200,7 @@ const rawSignature =
     storeId: "MomoTestStore",
     requestId,
     amount,
-    orderId: momoOrderId,   // gửi sang MoMo orderId unique
+    orderId: momoOrderId, // gửi sang MoMo orderId unique
     orderInfo,
     redirectUrl,
     ipnUrl,
@@ -201,7 +208,7 @@ const rawSignature =
     requestType: "payWithMethod",
     autoCapture: true,
     extraData: "",
-    signature
+    signature,
   });
 
   const options = {
@@ -217,7 +224,7 @@ const rawSignature =
     res2.on("data", (chunk) => (data += chunk));
     res2.on("end", () => {
       try {
-         console.log("🔗 MoMo response:", data);
+        console.log("🔗 MoMo response:", data);
         callback(null, JSON.parse(data));
       } catch (err) {
         callback(err, null);
@@ -244,10 +251,19 @@ router.post("/add", (req, res) => {
     payment_method,
     status,
     items,
+    coupon_id, // Nhớ hứng thêm coupon_id từ frontend truyền lên nhé
   } = req.body;
+
   console.log("🔍 Nhận đơn hàng:", req.body);
-  
-  const checkEmailSql  = "SELECT * FROM customers WHERE email = ?";
+
+  if (!customer_email) {
+    return res
+      .status(400)
+      .json({ success: false, message: "Email không được để trống" });
+  }
+
+  // 1. Kiểm tra Email xem khách hàng đã tồn tại chưa
+  const checkEmailSql = "SELECT * FROM customers WHERE email = ?";
   db.query(checkEmailSql, [customer_email], (emailErr, emailResult) => {
     if (emailErr) {
       return res.status(500).json({
@@ -257,14 +273,28 @@ router.post("/add", (req, res) => {
       });
     }
 
+    // Định nghĩa hàm xử lý lưu Order tách biệt
     const processOrder = (customerId, plainPassword = null) => {
       db.getConnection((connErr, connection) => {
-        if (connErr) return res.status(500).json({ success: false, message: "Không thể kết nối DB", error: connErr.message });
+        if (connErr) {
+          return res.status(500).json({
+            success: false,
+            message: "Không thể kết nối DB",
+            error: connErr.message,
+          });
+        }
 
         connection.beginTransaction((beginErr) => {
-          if (beginErr) return res.status(500).json({ success: false, message: "Lỗi transaction", error: beginErr.message });
-       
-          // Thêm đơn hàng
+          if (beginErr) {
+            connection.release();
+            return res.status(500).json({
+              success: false,
+              message: "Lỗi transaction",
+              error: beginErr.message,
+            });
+          }
+
+          // Thêm đơn hàng (Đã map thêm trường coupon_id thực tế từ req.body nếu có)
           const orderSql = `
             INSERT INTO orders (customer_name, customer_phone, customer_email, address, note,
               total, discount, shipping, final_total, payment_method, status, customer_id, coupon_id)
@@ -286,7 +316,7 @@ router.post("/add", (req, res) => {
               payment_method,
               status,
               customerId,
-              null, // coupon_id (để null nếu chưa xử lý)
+              coupon_id || null,
             ],
             (orderErr, orderResult) => {
               if (orderErr) {
@@ -301,7 +331,8 @@ router.post("/add", (req, res) => {
               }
 
               const orderId = orderResult.insertId;
-                // Thêm sản phẩm
+
+              // Thêm sản phẩm và trừ kho tồn
               const insertItem = (item) =>
                 new Promise((resolve, reject) => {
                   const { product_id, quantity, price, size, color } = item;
@@ -313,10 +344,9 @@ router.post("/add", (req, res) => {
                     insertSql,
                     [orderId, product_id, quantity, price, size, color],
                     (itemErr) => {
-                      if (itemErr) {
-                        return reject(itemErr);
-                      }
-                      console.log("✅ Đã insert item, cập nhật tồn kho...");
+                      if (itemErr) return reject(itemErr);
+
+                      // Cập nhật giảm tồn kho tại bảng sanpham
                       const updateStockSql = `
                         UPDATE sanpham
                         SET quantity = quantity - ?
@@ -326,24 +356,25 @@ router.post("/add", (req, res) => {
                         updateStockSql,
                         [quantity, product_id, quantity],
                         (stockErr, stockResult) => {
-                          if (stockErr) {
-                            console.error("❌ Lỗi khi cập nhật tồn kho:", stockErr.message);
-                            return reject(stockErr);
-                          }
+                          if (stockErr) return reject(stockErr);
                           if (stockResult.affectedRows === 0) {
-                            return reject(new Error(`Sản phẩm ID ${product_id} không đủ hàng tồn`));
+                            return reject(
+                              new Error(
+                                `Sản phẩm ID ${product_id} (Size: ${size}, Color: ${color}) không đủ hàng tồn`,
+                              ),
+                            );
                           }
-                          console.log("✅ Cập nhật tồn kho thành công:", stockResult);
                           resolve();
-                        }
+                        },
                       );
-                    }
+                    },
                   );
                 });
 
+              // Thực thi đồng loạt lưu danh sách item
               Promise.all(items.map(insertItem))
                 .then(() => {
-                  connection.commit(async (commitErr) => {
+                  connection.commit((commitErr) => {
                     if (commitErr) {
                       return connection.rollback(() => {
                         connection.release();
@@ -355,99 +386,118 @@ router.post("/add", (req, res) => {
                       });
                     }
 
+                    // Giải phóng connection ngay sau khi commit thành công
                     connection.release();
-                    // 👉 SOCKET + NOTIFICATION
-                      try {
-                        const io = req.app.get("io");
-                        const title = "Đặt hàng thành công";
-                        const message = `Đơn hàng #${orderId} của bạn đã được tạo thành công.`;
 
-                        // Insert vào DB
-                       db.query(
-                          "INSERT INTO notifications (user_id, order_id, type, title, message, link) VALUES (?,?,?,?,?,?)",
-                          [customerId || null, orderId, "order_created", title, message, orderId],
-                          (err, result) => {
-                            if (err) {
-                              console.error("❌ Lỗi tạo thông báo:", err.message);
-                            } else {
-                              console.log("✅ Insert notification thành công:", result.insertId);
-                            }
-                          }
-                        );
+                    // 🔔 GỬI SOCKET & LƯU THÔNG BÁO (NOTIFICATION)
+                    try {
+                      const io = req.app.get("io");
+                      const title = "Đặt hàng thành công";
+                      const msgText = `Đơn hàng #${orderId} của bạn đã được tạo thành công.`;
 
-                        // Emit cho admin (room admin)
+                      db.query(
+                        "INSERT INTO notifications (user_id, order_id, type, title, message, link) VALUES (?,?,?,?,?,?)",
+                        [
+                          customerId,
+                          orderId,
+                          "order_created",
+                          title,
+                          msgText,
+                          String(orderId),
+                        ],
+                        (err) => {
+                          if (err)
+                            console.error(
+                              "❌ Lỗi tạo thông báo DB:",
+                              err.message,
+                            );
+                        },
+                      );
+
+                      if (io) {
                         io.to("admin_room").emit("new_order", {
                           orderId,
                           customer: customer_name,
                           total: final_total,
-                          created_at: new Date()
+                          created_at: new Date(),
                         });
 
-                        // Emit cho customer (room riêng)
                         if (customerId) {
                           io.to(`user_${customerId}`).emit("new_notification", {
                             orderId,
                             type: "order_created",
                             title,
-                            message,
+                            message: msgText,
                             link: orderId,
-                            created_at: new Date()
+                            created_at: new Date(),
                           });
                         }
-                      } catch (e) {
-                        console.error("❌ Lỗi tạo thông báo:", e.message);
                       }
-                  // Nếu MoMo
+                    } catch (e) {
+                      console.error("❌ Lỗi Socket:", e.message);
+                    }
+
+                    // 💳 PHÂN LUỒNG PHƯƠNG THỨC THANH TOÁN
                     if (payment_method === "MOMO") {
                       const redirectUrl = process.env.URL_WEBSITE;
                       const ipnUrl = `${process.env.URL_WEB}/api/orders/momo-callback`;
 
-                      createMoMoPayment( orderId,final_total, `Thanh toán đơn hàng #${orderId}`, redirectUrl, ipnUrl, (err, momoRes) => {
-                        if (err) {
-                          return res.status(500).json({
-                            success: false,
-                            message: "Lỗi kết nối MoMo",
-                            error: err.message,
+                      createMoMoPayment(
+                        orderId,
+                        final_total,
+                        `Thanh toán đơn hàng #${orderId}`,
+                        redirectUrl,
+                        ipnUrl,
+                        (momoErr, momoRes) => {
+                          if (momoErr) {
+                            return res.status(500).json({
+                              success: false,
+                              message: "Lỗi kết nối cổng MoMo",
+                              error: momoErr.message,
+                            });
+                          }
+                          return res.status(200).json({
+                            success: true,
+                            message: "Đơn hàng đã tạo, chuyển hướng sang MoMo",
+                            orderId,
+                            payUrl: momoRes.payUrl,
                           });
-                        }
-                        return res.status(200).json({
-                          success: true,
-                          message: "Đơn hàng đã tạo, redirect sang MoMo",
-                          orderId,
-                          payUrl: momoRes.payUrl,
-                        });
-                      });
+                        },
+                      );
                     } else {
-                        // Gửi thông báo và email
+                      // Nếu chọn COD hoặc Chuyển khoản ngân hàng trực tiếp
+                      if (typeof notifyNewOrder === "function") {
                         notifyNewOrder({
                           id: orderId,
                           customer: customer_name,
                           total: final_total,
                         });
-                      // Nếu COD / bank → gửi mail luôn
-                      try {
-                          await sendEmails({
-                            orderId,
-                            customer: customer_name,
-                            email: customer_email,
-                            phone: customer_phone,
-                            address,
-                            note,
-                            paymentMethod: payment_method,
-                            total,
-                            discount,
-                            shipping,
-                            final_total,
-                            items,
-                            plainPassword,
-                          });
-                        } catch (e) {
-                          console.error("❌ Lỗi gửi email:", e.message);
-                        }
+                      }
 
-                      res.status(201).json({
+                      // Gửi Email hóa đơn kèm mật khẩu ngẫu nhiên (nếu là tài khoản mới tạo)
+                      if (typeof sendEmails === "function") {
+                        sendEmails({
+                          orderId,
+                          customer: customer_name,
+                          email: customer_email,
+                          phone: customer_phone,
+                          address,
+                          note,
+                          paymentMethod: payment_method,
+                          total,
+                          discount,
+                          shipping,
+                          final_total,
+                          items,
+                          plainPassword, // Sẽ có giá trị nếu là KH mới mua COD
+                        }).catch((e) =>
+                          console.error("❌ Lỗi gửi email hóa đơn:", e.message),
+                        );
+                      }
+
+                      return res.status(201).json({
                         success: true,
-                        message: "Đơn hàng đã tạo thành công",
+                        message: "Đơn hàng đã được tạo thành công!",
                         orderId,
                       });
                     }
@@ -458,61 +508,75 @@ router.post("/add", (req, res) => {
                     connection.release();
                     res.status(500).json({
                       success: false,
-                      message: "Lỗi khi lưu chi tiết sản phẩm",
+                      message:
+                        "Lỗi khi lưu chi tiết sản phẩm hoặc hết hàng tồn kho",
                       error: itemErr.message,
                     });
                   });
                 });
-            }
+            },
           );
         });
       });
     };
 
+    // 2. PHÂN LUỒNG XỬ LÝ KHÁCH HÀNG (CUSTOMERS)
     if (emailResult.length > 0) {
-      const updateSql = `
-        UPDATE customers SET full_name = ?, phone = ?, address = ?, status = ? WHERE email = ?
-      `;
+      // Nhánh A: Khách hàng ĐÃ TỒN TẠI -> Tiến hành cập nhật lại thông tin mới nhất
+      const existingCustomer = emailResult[0];
+      const updateSql = `UPDATE customers SET full_name = ?, phone = ?, address = ?, status = ? WHERE id = ?`;
+
       db.query(
         updateSql,
-        [customer_name, customer_phone, address, "active", customer_email],
+        [customer_name, customer_phone, address, "active", existingCustomer.id],
         (updateErr) => {
           if (updateErr) {
             return res.status(500).json({
               success: false,
-              message: "Lỗi cập nhật khách hàng",
+              message: "Lỗi cập nhật thông tin khách hàng",
               error: updateErr.message,
             });
           }
-          processOrder(emailResult[0].id, null);
-        }
+          // Tiến hành tạo đơn hàng với ID khách hàng cũ
+          processOrder(existingCustomer.id, null);
+        },
       );
     } else {
-      
-      if (payment_method === "MOMO") {
-    // KH chưa tạo → chỉ process order, KH sẽ được tạo trong callback
-    processOrder(null, null);
-  } else {
-    // COD / bank → tạo KH ngay
-    const plainPassword = generateRandomPassword();
-    const hashedPassword = bcrypt.hashSync(plainPassword, 10);
-    const insertSql = `
-      INSERT INTO customers (full_name, phone, email, address, status, password)
-      VALUES (?, ?, ?, ?, ?, ?)
-    `;
-    db.query(
-      insertSql,
-      [customer_name, customer_phone, customer_email, address, "active", hashedPassword],
-      (custErr, custResult) => {
-        if (custErr) return res.status(500).json({ success: false, message: "Lỗi thêm khách hàng", error: custErr.message });
-        processOrder(custResult.insertId, plainPassword);
-      }
-    );
-  }
+      // Nhánh B: Khách hàng MỚI -> Tự động đăng ký tài khoản ngẫu nhiên bất kể là COD hay MOMO
+      const plainPassword = generateRandomPassword();
+      const hashedPassword = bcrypt.hashSync(plainPassword, 10);
+
+      const insertSql = `
+        INSERT INTO customers (full_name, phone, email, address, status, password)
+        VALUES (?, ?, ?, ?, ?, ?)
+      `;
+
+      db.query(
+        insertSql,
+        [
+          customer_name,
+          customer_phone,
+          customer_email,
+          address,
+          "active",
+          hashedPassword,
+        ],
+        (custErr, custResult) => {
+          if (custErr) {
+            console.error("❌ LỖI TẠO KHÁCH HÀNG CHI TIẾT:", custErr);
+            return res.status(500).json({
+              success: false,
+              message: "Lỗi tự động tạo tài khoản khách hàng mới",
+              error: custErr.message,
+            });
+          }
+          // Tiến hành tạo đơn hàng với ID khách hàng vừa được INSERT thành công
+          processOrder(custResult.insertId, plainPassword);
+        },
+      );
     }
   });
 });
-
 
 router.post("/momo-callback", async (req, res) => {
   try {
@@ -534,122 +598,135 @@ router.post("/momo-callback", async (req, res) => {
             return res.status(500).json({ success: false, error: err.message });
           }
           console.log("✅ Cập nhật trạng thái đơn hàng thành công:", dbOrderId);
-        }
+        },
       );
 
       // lấy thông tin order
-      db.query("SELECT * FROM orders WHERE id = ?", [dbOrderId], (err, orders) => {
-        if (err) {
-          console.error("🔥 Lỗi lấy order:", err);
-          return;
-        }
-        const order = orders[0];
+      db.query(
+        "SELECT * FROM orders WHERE id = ?",
+        [dbOrderId],
+        (err, orders) => {
+          if (err) {
+            console.error("🔥 Lỗi lấy order:", err);
+            return;
+          }
+          const order = orders[0];
 
-        // lấy order_items kèm tên sản phẩm
-        db.query(
-          `SELECT oi.*, p.name 
+          // lấy order_items kèm tên sản phẩm
+          db.query(
+            `SELECT oi.*, p.name 
            FROM order_items oi
            JOIN sanpham p ON oi.product_id = p.id
            WHERE oi.order_id = ?`,
-          [dbOrderId],
-          async (err, items) => {
-            if (err) {
-              console.error("🔥 Lỗi lấy order_items:", err);
-              return;
-            }
+            [dbOrderId],
+            async (err, items) => {
+              if (err) {
+                console.error("🔥 Lỗi lấy order_items:", err);
+                return;
+              }
 
-            console.log("🔍 Thông tin order:", order);
-            console.log("🛒 Items:", items);
+              console.log("🔍 Thông tin order:", order);
+              console.log("🛒 Items:", items);
 
-            // kiểm tra khách hàng
-            db.query(
-              "SELECT * FROM customers WHERE email = ?",
-              [order.customer_email],
-              async (err, emailResult) => {
-                if (err) {
-                  console.error("🔥 Lỗi kiểm tra khách hàng:", err);
-                  return;
-                }
+              // kiểm tra khách hàng
+              db.query(
+                "SELECT * FROM customers WHERE email = ?",
+                [order.customer_email],
+                async (err, emailResult) => {
+                  if (err) {
+                    console.error("🔥 Lỗi kiểm tra khách hàng:", err);
+                    return;
+                  }
 
-                let plainPassword = null;
+                  let plainPassword = null;
 
-                if (emailResult.length > 0) {
-                  // khách đã tồn tại → cập nhật thông tin
-                  const updateSql = `
+                  if (emailResult.length > 0) {
+                    // khách đã tồn tại → cập nhật thông tin
+                    const updateSql = `
                     UPDATE customers SET full_name = ?, phone = ?, address = ?, status = ? WHERE email = ?
                   `;
-                  db.query(
-                    updateSql,
-                    [
-                      order.customer_name,
-                      order.customer_phone,
-                      order.address,
-                      "active",
-                      order.customer_email,
-                    ],
-                    (updateErr) => {
-                      if (updateErr) {
-                        console.error("🔥 Lỗi cập nhật khách hàng:", updateErr);
-                      } else {
-                        console.log("✅ Đã cập nhật khách hàng:", order.customer_email);
-                      }
-                    }
-                  );
-                } else {
-                  // khách mới → tạo account
-                  plainPassword = generateRandomPassword();
-                  const hashedPassword = bcrypt.hashSync(plainPassword, 10);
+                    db.query(
+                      updateSql,
+                      [
+                        order.customer_name,
+                        order.customer_phone,
+                        order.address,
+                        "active",
+                        order.customer_email,
+                      ],
+                      (updateErr) => {
+                        if (updateErr) {
+                          console.error(
+                            "🔥 Lỗi cập nhật khách hàng:",
+                            updateErr,
+                          );
+                        } else {
+                          console.log(
+                            "✅ Đã cập nhật khách hàng:",
+                            order.customer_email,
+                          );
+                        }
+                      },
+                    );
+                  } else {
+                    // khách mới → tạo account
+                    plainPassword = generateRandomPassword();
+                    const hashedPassword = bcrypt.hashSync(plainPassword, 10);
 
-                  const insertSql = `
+                    const insertSql = `
                     INSERT INTO customers (full_name, phone, email, address, status, password)
                     VALUES (?, ?, ?, ?, ?, ?)
                   `;
-                  db.query(
-                    insertSql,
-                    [
-                      order.customer_name,
-                      order.customer_phone,
-                      order.customer_email,
-                      order.address,
-                      "active",
-                      hashedPassword,
-                    ],
-                    (custErr, custResult) => {
-                      if (custErr) {
-                        console.error("🔥 Lỗi thêm khách hàng:", custErr);
-                      } else {
-                        console.log("✅ Tạo khách hàng mới thành công:", order.customer_email);
-                      }
-                    }
-                  );
-                }
+                    db.query(
+                      insertSql,
+                      [
+                        order.customer_name,
+                        order.customer_phone,
+                        order.customer_email,
+                        order.address,
+                        "active",
+                        hashedPassword,
+                      ],
+                      (custErr, custResult) => {
+                        if (custErr) {
+                          console.error("🔥 Lỗi thêm khách hàng:", custErr);
+                        } else {
+                          console.log(
+                            "✅ Tạo khách hàng mới thành công:",
+                            order.customer_email,
+                          );
+                        }
+                      },
+                    );
+                  }
 
-                // gửi email (KH + Admin)
-                try {
-                  const mailStatus = await sendEmails({
-                    orderId: dbOrderId,
-                    customer: order.customer_name,
-                    email: order.customer_email,
-                    phone: order.customer_phone,
-                    address: order.address,
-                    note: order.note,
-                    paymentMethod: order.payment_method,
-                    total: order.total,
-                    discount: order.discount,
-                    shipping: order.shipping,
-                    final_total: order.final_total,
-                    items,
-                    plainPassword, // nếu KH mới thì gửi pass
-                  });
-                  console.log("📨 Kết quả gửi email:", mailStatus);
-                } catch (mailErr) {
-                  console.error("🔥 Gửi email thất bại:", mailErr);
-                }
-              }
-            );
-          }
-        );
-      });
+                  // gửi email (KH + Admin)
+                  try {
+                    const mailStatus = await sendEmails({
+                      orderId: dbOrderId,
+                      customer: order.customer_name,
+                      email: order.customer_email,
+                      phone: order.customer_phone,
+                      address: order.address,
+                      note: order.note,
+                      paymentMethod: order.payment_method,
+                      total: order.total,
+                      discount: order.discount,
+                      shipping: order.shipping,
+                      final_total: order.final_total,
+                      items,
+                      plainPassword, // nếu KH mới thì gửi pass
+                    });
+                    console.log("📨 Kết quả gửi email:", mailStatus);
+                  } catch (mailErr) {
+                    console.error("🔥 Gửi email thất bại:", mailErr);
+                  }
+                },
+              );
+            },
+          );
+        },
+      );
     } else {
       console.log("❌ Thanh toán thất bại cho order:", dbOrderId);
       db.query("UPDATE orders SET status = 'failed' WHERE id = ?", [dbOrderId]);
@@ -661,21 +738,6 @@ router.post("/momo-callback", async (req, res) => {
     res.status(500).json({ success: false, error: err.message });
   }
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // Lấy danh sách đơn hàng
 router.get("/", (req, res) => {
@@ -850,42 +912,84 @@ router.delete("/delete/:id", (req, res) => {
       .json({ success: true, message: "Xóa đơn hàng thành công" });
   });
 });
-//cập nhật trạng thái 
+//cập nhật trạng thái
 router.put("/:id/status", async (req, res) => {
   const orderId = req.params.id;
   const { status } = req.body;
   const io = req.app.get("io");
 
   try {
+    // 1. Lấy customer_id
     const rows = await new Promise((resolve, reject) => {
-      const sql = "SELECT customer_id FROM orders WHERE id = ?";
-      db.query(sql, [orderId], (err, rows) => {
-        if (err) return reject(err);
-        resolve(rows);
-      });
+      db.query(
+        "SELECT customer_id, status FROM orders WHERE id = ?",
+        [orderId],
+        (err, rows) => {
+          if (err) return reject(err);
+          resolve(rows);
+        },
+      );
     });
 
-    if (rows.length === 0) return res.status(404).json({ success: false, message: "Không tìm thấy đơn hàng" });
+    if (rows.length === 0) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Không tìm thấy đơn hàng" });
+    }
 
     const userId = rows[0].customer_id;
+    const oldStatus = rows[0].status;
 
-    await new Promise((resolve, reject) => {
-      const sql = "UPDATE orders SET status = ? WHERE id = ?";
-      db.query(sql, [status, orderId], (err, result) => {
-        if (err) return reject(err);
-        resolve(result);
+    // 2. Nếu chuyển sang HỦY → hoàn kho
+    if (status === "Đã hủy" && oldStatus !== "Đã hủy") {
+      const items = await new Promise((resolve, reject) => {
+        db.query(
+          "SELECT product_id, quantity FROM order_items WHERE order_id = ?",
+          [orderId],
+          (err, rows) => {
+            if (err) return reject(err);
+            resolve(rows);
+          },
+        );
       });
+
+      for (const item of items) {
+        await new Promise((resolve, reject) => {
+          db.query(
+            "UPDATE sanpham SET quantity = quantity + ? WHERE id = ?",
+            [item.quantity, item.product_id],
+            (err) => {
+              if (err) return reject(err);
+              resolve();
+            },
+          );
+        });
+      }
+    }
+
+    // 3. Update status
+    await new Promise((resolve, reject) => {
+      db.query(
+        "UPDATE orders SET status = ? WHERE id = ?",
+        [status, orderId],
+        (err, result) => {
+          if (err) return reject(err);
+          resolve(result);
+        },
+      );
     });
 
-    // Gọi hàm thông báo
+    // 4. Notify realtime
     if (userId) {
       notifyOrderStatusChange(io, orderId, userId, status);
     }
 
-    // Emit cho tất cả (optional)
     io.emit("orderUpdate", { orderId, status });
-    console.log("Emit orderUpdate", { orderId, status });
-    res.json({ success: true, message: "Cập nhật trạng thái thành công" });
+
+    res.json({
+      success: true,
+      message: "Cập nhật trạng thái thành công",
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, message: err.message });
@@ -981,7 +1085,10 @@ router.get("/:id", async (req, res) => {
       });
     });
 
-    if (orders.length === 0) return res.status(404).json({ success: false, message: "Không tìm thấy đơn hàng" });
+    if (orders.length === 0)
+      return res
+        .status(404)
+        .json({ success: false, message: "Không tìm thấy đơn hàng" });
 
     // Lấy chi tiết order items kèm thông tin sản phẩm
     const items = await new Promise((resolve, reject) => {
@@ -1004,8 +1111,6 @@ router.get("/:id", async (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 });
-
-
 
 // router.post("/payment-momo", async (req, res) => {
 //   //https://developers.momo.vn/#/docs/en/aiov2/?id=payment-method
@@ -1101,6 +1206,6 @@ router.get("/:id", async (req, res) => {
 
 // router.get("/return-momo", (req, res) => {
 //   console.log("result" , req.query);
-  
+
 // })
 module.exports = router;
