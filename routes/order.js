@@ -13,6 +13,7 @@ const crypto = require("crypto");
 require("dotenv").config();
 const https = require("https");
 const getSettings = require("../utils/getSettings");
+const { log } = require("console");
 
 async function sendEmails({
   orderId,
@@ -140,7 +141,6 @@ async function sendEmails({
           </div>
 
           <p style="margin-top: 30px;">🕐 <em>Vui lòng xử lý đơn hàng này sớm nhất có thể.</em></p>
-          <p style="color: #999; font-size: 13px;">Thời Trang Việt Team<br/>https://amsacmau.vn</p>
         </div>
       `,
     };
@@ -997,6 +997,8 @@ router.put("/:id/status", async (req, res) => {
 });
 
 router.get("/acv/:orderId", (req, res) => {
+  console.log("CALL API ORDER DETAIL");
+
   const orderId = req.params.orderId;
 
   // Truy vấn thông tin đơn hàng
