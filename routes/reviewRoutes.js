@@ -4,7 +4,7 @@ const db = require("../db");
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
-const { notifyNewReview} = require("../sockets/notiSocket");
+const { notifyNewReview } = require("../sockets/notiSocket");
 
 // ------------------- Cấu hình upload ảnh -------------------
 const storage = multer.diskStorage({
@@ -22,7 +22,9 @@ const storage = multer.diskStorage({
 
 const fileFilter = (req, file, cb) => {
   const allowedTypes = /jpeg|jpg|png|gif/;
-  const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+  const extname = allowedTypes.test(
+    path.extname(file.originalname).toLowerCase(),
+  );
   const mimetype = allowedTypes.test(file.mimetype);
   if (extname && mimetype) cb(null, true);
   else cb(new Error("Chỉ cho phép file ảnh (jpg, jpeg, png, gif)!"));
@@ -94,12 +96,18 @@ router.get("/:productId", (req, res) => {
         let images = [];
         let videos = [];
         try {
-          images = r.images && r.images !== "null" && r.images !== "" ? JSON.parse(r.images) : [];
+          images =
+            r.images && r.images !== "null" && r.images !== ""
+              ? JSON.parse(r.images)
+              : [];
         } catch (e) {
           images = [];
         }
         try {
-          videos = r.videos && r.videos !== "null" && r.videos !== "" ? JSON.parse(r.videos) : [];
+          videos =
+            r.videos && r.videos !== "null" && r.videos !== ""
+              ? JSON.parse(r.videos)
+              : [];
         } catch (e) {
           videos = [];
         }
@@ -120,7 +128,6 @@ router.get("/:productId", (req, res) => {
   });
 });
 
-
 // Upload ảnh đánh giá
 router.post("/upload", upload.array("images", 5), (req, res) => {
   try {
@@ -134,30 +141,75 @@ router.post("/upload", upload.array("images", 5), (req, res) => {
 
 // Thêm đánh giá
 router.post("/", upload.array("images", 5), (req, res) => {
+  console.log("\n================ NEW REVIEW REQUEST ================");
+  console.log("Time:", new Date().toLocaleString());
+
+  console.log("\n========== BODY ==========");
+  console.log(req.body);
+
+  console.log("\n========== FILES ==========");
+  console.log(req.files);
+
+  if (req.files && req.files.length > 0) {
+    console.log(`Đã nhận ${req.files.length} ảnh`);
+
+    req.files.forEach((file, index) => {
+      console.log(`\nẢnh ${index + 1}`);
+      console.log({
+        fieldname: file.fieldname,
+        originalname: file.originalname,
+        filename: file.filename,
+        encoding: file.encoding,
+        mimetype: file.mimetype,
+        destination: file.destination,
+        path: file.path,
+        size: file.size,
+      });
+    });
+  } else {
+    console.log("❌ Không nhận được ảnh nào.");
+  }
+
   const { product_id, user_id, rating, content, videos, variant } = req.body;
 
   let imagePaths = [];
+
   if (req.files && req.files.length > 0) {
     imagePaths = req.files.map((file) => `/uploads/reviews/${file.filename}`);
   } else if (req.body.images) {
     try {
       imagePaths = JSON.parse(req.body.images);
     } catch (e) {
+      console.log("Parse images lỗi:", e.message);
       imagePaths = [];
     }
   }
 
   let videoPaths = [];
+
   if (videos) {
     try {
       videoPaths = JSON.parse(videos);
     } catch (e) {
+      console.log("Parse videos lỗi:", e.message);
       videoPaths = [];
     }
   }
 
+  console.log("\n========== DATA SAVE ==========");
+  console.log({
+    product_id,
+    user_id,
+    rating,
+    content,
+    variant,
+    imagePaths,
+    videoPaths,
+  });
+
   const insertQuery = `
-    INSERT INTO reviews (product_id, user_id, rating, content, images, variant, is_verified, created_at) 
+    INSERT INTO reviews
+    (product_id, user_id, rating, content, images, variant, is_verified, created_at)
     VALUES (?, ?, ?, ?, ?, ?, ?, NOW())
   `;
 
@@ -170,15 +222,18 @@ router.post("/", upload.array("images", 5), (req, res) => {
       content,
       JSON.stringify(imagePaths),
       variant || null,
-      false, // mặc định chưa xác minh đã mua
+      false,
     ],
     (err, result) => {
       if (err) {
+        console.error("\n========== DB ERROR ==========");
         console.error(err);
         return res.status(500).json({ error: "Lỗi thêm đánh giá" });
       }
 
-      // tạo object review vừa thêm
+      console.log("\n========== INSERT SUCCESS ==========");
+      console.log("Insert ID:", result.insertId);
+
       const newReview = {
         id: result.insertId,
         product_id,
@@ -192,26 +247,44 @@ router.post("/", upload.array("images", 5), (req, res) => {
         created_at: new Date(),
       };
 
-      // phát socket cho tất cả client
+      console.log("\n========== REVIEW OBJECT ==========");
+      console.log(JSON.stringify(newReview, null, 2));
+
       const io = req.app.get("io");
-      io.emit("newReview", newReview);
+
+      if (io) {
+        console.log("📡 Emit socket: newReview");
+        io.emit("newReview", newReview);
+      } else {
+        console.log("⚠️ Không tìm thấy socket.io");
+      }
+
       notifyNewReview({
-                          id:result.insertId,
-                         
-                        });
-      res.json({ message: "Đánh giá thành công", review: newReview });
-    }
+        id: result.insertId,
+      });
+
+      console.log("✅ Review đã tạo thành công");
+      console.log("===================================================\n");
+
+      res.json({
+        message: "Đánh giá thành công",
+        review: newReview,
+      });
+    },
   );
 });
-
 
 // Like / Hữu ích
 router.put("/:id/helpful", (req, res) => {
   const { id } = req.params;
-  db.query("UPDATE reviews SET helpful_count = helpful_count + 1 WHERE id = ?", [id], (err) => {
-    if (err) return res.status(500).json({ error: "Lỗi update helpful" });
-    res.json({ message: "Đã ghi nhận đánh giá hữu ích" });
-  });
+  db.query(
+    "UPDATE reviews SET helpful_count = helpful_count + 1 WHERE id = ?",
+    [id],
+    (err) => {
+      if (err) return res.status(500).json({ error: "Lỗi update helpful" });
+      res.json({ message: "Đã ghi nhận đánh giá hữu ích" });
+    },
+  );
 });
 
 // Shop phản hồi đánh giá
@@ -219,15 +292,26 @@ router.post("/:id/reply", (req, res) => {
   const { id } = req.params;
   const { reply_content } = req.body;
 
-  db.query("UPDATE reviews SET reply = ? WHERE id = ?", [reply_content, id], (err) => {
-    if (err) return res.status(500).json({ error: "Lỗi phản hồi" });
-    
-    res.json({ message: "Đã phản hồi đánh giá" });
-  });
+  db.query(
+    "UPDATE reviews SET reply = ? WHERE id = ?",
+    [reply_content, id],
+    (err) => {
+      if (err) return res.status(500).json({ error: "Lỗi phản hồi" });
+
+      res.json({ message: "Đã phản hồi đánh giá" });
+    },
+  );
 });
 // admin
 router.get("/", (req, res) => {
-  const { productId, rating, hasImage, hasVideo, page = 1, limit = 20 } = req.query;
+  const {
+    productId,
+    rating,
+    hasImage,
+    hasVideo,
+    page = 1,
+    limit = 20,
+  } = req.query;
   const offset = (page - 1) * limit;
 
   if (productId) {
@@ -271,8 +355,12 @@ router.get("/", (req, res) => {
         const result = rows.map((r) => {
           let imgs = [];
           let vids = [];
-          try { imgs = r.images && r.images !== "null" ? JSON.parse(r.images) : []; } catch {}
-          try { vids = r.videos && r.videos !== "null" ? JSON.parse(r.videos) : []; } catch {}
+          try {
+            imgs = r.images && r.images !== "null" ? JSON.parse(r.images) : [];
+          } catch {}
+          try {
+            vids = r.videos && r.videos !== "null" ? JSON.parse(r.videos) : [];
+          } catch {}
           return { ...r, images: imgs, videos: vids };
         });
 
@@ -311,16 +399,23 @@ router.get("/", (req, res) => {
     const countQuery = `SELECT COUNT(DISTINCT product_id) as total_products FROM reviews`;
 
     db.query(countQuery, (err, countResult) => {
-      if (err) return res.status(500).json({ error: "Lỗi đếm sản phẩm có review" });
+      if (err)
+        return res.status(500).json({ error: "Lỗi đếm sản phẩm có review" });
 
       const total = countResult[0].total_products;
 
       db.query(query, [Number(limit), Number(offset)], (err, rows) => {
-        if (err) return res.status(500).json({ error: "Lỗi lấy danh sách review" });
+        if (err)
+          return res.status(500).json({ error: "Lỗi lấy danh sách review" });
 
         const result = rows.map((r) => {
           let imgs = [];
-          try { imgs = r.latest_images && r.latest_images !== "null" ? JSON.parse(r.latest_images) : []; } catch {}
+          try {
+            imgs =
+              r.latest_images && r.latest_images !== "null"
+                ? JSON.parse(r.latest_images)
+                : [];
+          } catch {}
           return { ...r, latest_images: imgs };
         });
 
@@ -338,7 +433,6 @@ router.get("/", (req, res) => {
   }
 });
 
-
 router.put("/:id/approve", (req, res) => {
   const reviewId = req.params.id;
 
@@ -347,7 +441,11 @@ router.put("/:id/approve", (req, res) => {
     if (err) return res.status(500).json({ error: "Lỗi duyệt review" });
 
     // Trả về cho FE, không emit ở đây
-    res.json({ success: true, reviewId, message: "Đã duyệt đánh giá thành công!" });
+    res.json({
+      success: true,
+      reviewId,
+      message: "Đã duyệt đánh giá thành công!",
+    });
   });
 });
 
